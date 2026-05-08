@@ -833,7 +833,8 @@
     .auto-status-field { max-width: 110px; }
     .auto-status-bar { padding: 5px 10px; gap: 5px; min-height: 32px; }
   }
-/* 🎵 BGM 음표 애니메이션 및 진행바 스타일 추가 */
+
+  /* 🎵 BGM 음표 애니메이션 및 진행바 스타일 */
   @keyframes note-dance {
     0%, 100% { transform: translateY(0) rotate(0deg); }
     25% { transform: translateY(-3px) rotate(-15deg); }
@@ -874,11 +875,13 @@
     
     <div class="window-body">
       
-      <!-- 사이드바 -->
+  <!-- 사이드바 -->
       <div class="sidebar">
-        <!-- 미니멀한 테마 색상 변경 -->
-        <div class="sidebar-header-wrap">
-          <div class="theme-color-picker-wrap">
+        <!-- 상단 시계 & 테마 위젯 통합 영역 (가로줄 칸 나누기 포함) -->
+        <div style="height: 40px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; flex-shrink: 0; width: 100%; box-sizing: border-box;">
+          <div id="sidebar-realtime-clock" style="font-size: 9.5px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; letter-spacing: 0.2px;"></div>
+          
+          <div class="theme-color-picker-wrap" style="transform: scale(0.8); transform-origin: right center; margin: 0; padding: 2px 6px;">
             <input type="color" id="custom-theme-picker" class="custom-color-input" value="#5b89ff" oninput="applyCustomTheme(this.value)" title="테마 색상 변경">
             <button class="theme-reset-btn" onclick="applyCustomTheme('#5b89ff')" title="기본 색상으로 초기화">↺</button>
           </div>
@@ -1783,14 +1786,17 @@ window.onload = async () => {
   document.getElementById('app-title-display').textContent = "☁️ 데이터 동기화 중...";
   
   // ▼ 시계 타이머 추가된 부분
-  setInterval(() => {
+setInterval(() => {
     const now = new Date();
-    const dateStr = now.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\.$/, '');
-    const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
-    const clockEl = document.getElementById('realtime-clock');
-    if(clockEl) clockEl.innerHTML = `<span style="color:var(--text-muted);">TODAY</span> ${dateStr} &nbsp; <span style="color:var(--text-muted);">TIME</span> ${timeStr} &nbsp; <span style="color: #22c55e;">●</span> ON`;
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+    
+    const clockEl = document.getElementById('sidebar-realtime-clock');
+    if(clockEl) {
+      clockEl.innerHTML = `TODAY <span style="color: #ef4444; margin: 0 4px;">${month}.${day}</span> <span style="opacity:0.4;">·</span> <span style="color: var(--primary-color); margin: 0 4px;">${timeStr}</span> <span style="opacity:0.4;">·</span> <span style="color: #22c55e; margin-left: 4px; margin-right: 2px;">●</span> ON`;
+    }
   }, 1000);
-  // ▲ 여기까지
 
   await loadData();
 };
@@ -3064,7 +3070,6 @@ function applyUI() {
   const bgmTitleEl = document.querySelector('.bgm-title');
   if (bgmTitleEl) bgmTitleEl.style.display = 'none';
 
- // ▼ 여기서부터 복사해서 기존 코드를 덮어씌우세요!
   let activeBgmList = state.homepage.bgmList && state.homepage.bgmList.length > 0 
     ? state.homepage.bgmList 
     : (state.homepage.bgm ?[{ name: '기본 배경음악', url: state.homepage.bgm }] :[]);
@@ -3079,7 +3084,9 @@ function applyUI() {
       if (bgmUrl.startsWith('http')) {
         bgmName = bgmUrl.split('/').pop().split('?')[0] || '배경음악';
         try { bgmName = decodeURIComponent(bgmName); } catch(e){}
-      } else { bgmName = '로컬 업로드 오디오'; }
+      } else {
+        bgmName = '로컬 업로드 오디오';
+      }
     }
 
    let nextBtnHtml = activeBgmList.length > 1 
@@ -3100,15 +3107,18 @@ function applyUI() {
       playerHtml = `<audio id="bgm-player-audio" autoplay style="display:none;" onended="playNextBgm()"><source src="${bgmUrl}"></audio>`;
     }
 
-    // 🔥 새롭게 추가된 BGM 재생바 커스텀 UI
+    // 🔥 새롭게 수정된 BGM 렌더링 UI (접기/펴기 기능 추가)
     bgmContainer.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:8px; padding: 4px;">
-        <div style="display:flex; align-items:center; gap:6px; justify-content:center;">
+        <!-- 제목 영역 (클릭 시 하단 진행바 열림/닫힘) -->
+        <div style="display:flex; align-items:center; gap:6px; justify-content:center; cursor:pointer;" onclick="const wrap = document.getElementById('bgm-controls-wrap'); wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';" title="클릭하여 재생 컨트롤 열기/닫기">
           <div id="bgm-note" style="font-size:16px; transition:0.3s;">🎵</div>
           <div style="font-size:12px; font-weight:700; color:var(--text-main); max-width:130px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${bgmName}">${bgmName}</div>
           ${nextBtnHtml}
         </div>
-        <div style="display:flex; align-items:center; gap:8px; width:100%;">
+        
+        <!-- 진행바 및 컨트롤 영역 (기본 숨김) -->
+        <div id="bgm-controls-wrap" style="display:none; align-items:center; gap:8px; width:100%; transition: 0.3s; margin-top: 4px;">
           <button id="bgm-play-toggle" style="background:none; border:none; color:var(--text-main); cursor:pointer; font-size:12px; padding:0; width:16px;">⏸</button>
           <input type="range" id="bgm-progress" class="bgm-custom-range" value="0" min="0" max="100" step="0.1">
         </div>
@@ -3166,7 +3176,7 @@ function applyUI() {
                       const duration = event.target.getDuration(); const current = event.target.getCurrentTime();
                       if(duration) progressBar.value = (current / duration) * 100;
                     }, 500);
-                  } else {
+                  } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.UNSTARTED) {
                     if (note) note.classList.remove('playing-note');
                     playToggle.innerText = '▶'; clearInterval(ytTimer);
                   }
@@ -3179,10 +3189,10 @@ function applyUI() {
         initYtPlayer();
       }
     }, 100);
-  } else { 
+  } else
+ { 
     bgmContainer.innerHTML = `<div class="bgm-error" style="border:none; height:auto; padding:4px;">등록된 음악 없음</div>`; 
   }
-// ▲ 여기까지 덮어씌워 줍니다!
   document.getElementById('sidebar-name').textContent = state.ui.plName; document.getElementById('sidebar-role').textContent = state.ui.plRole;
   const sImg = document.getElementById('sidebar-img'); const sEmoji = document.getElementById('sidebar-emoji');
   if(state.ui.plImg) { sImg.src = state.ui.plImg; sImg.style.display='block'; sEmoji.style.display='none'; } else { sImg.style.display='none'; sEmoji.style.display='block'; sEmoji.textContent = state.ui.plEmoji; }
