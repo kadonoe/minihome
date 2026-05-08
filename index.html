@@ -1361,6 +1361,11 @@
         <hr style="border:0; border-top:1px solid var(--border-color); margin: 20px 0;">
         <div class="modal-group">
           <label class="modal-label">✨ 하단 탭 메뉴 아이콘 커스텀 (이모지 또는 사진)</label>
+          <!-- ▼ 추가된 투명화 체크박스 ▼ -->
+          <label style="font-size:12px; color:var(--primary-color); font-weight:bold; display:block; margin-bottom:10px;">
+            <input type="checkbox" id="ui-icon-remove-white"> 🪄 업로드하는 아이콘의 흰색 배경 투명하게 지우기
+          </label>
+          <!-- ▲ 추가된 부분 끝 ▲ -->
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
             <div><span style="font-size:12px; font-weight:bold;">홈</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-home" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-home')">적용</button><input type="file" id="file-icon-home" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-home')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-home').click()">사진</button></div></div>
             <div><span style="font-size:12px; font-weight:bold;">夢 (메인)</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-dream" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-dream')">적용</button><input type="file" id="file-icon-dream" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-dream')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-dream').click()">사진</button></div></div>
@@ -3577,12 +3582,13 @@ window.toggleStatusUI = function(mode) {
 window.handleTabIconFile = async function(e, inputId) {
   const file = e.target.files[0];
   if(!file) return;
-  const b64 = await new Promise(res => compressImage(file, res, 150));
-  document.getElementById(inputId).value = b64;
   
-  const iconKey = inputId.replace('icon-', '');
-  if (!state.ui.icons) state.ui.icons = {};
-  state.ui.icons[iconKey] = b64;
+  // ▼ 추가된 부분: 체크박스 상태 확인 후 투명화 적용 ▼
+  const removeWhite = document.getElementById('ui-icon-remove-white').checked;
+  const b64 = await new Promise(res => compressImage(file, res, 150, removeWhite));
+  // ▲ 추가된 부분 끝 ▲
+  
+  document.getElementById(inputId).value = b64;;
   
   saveData(); 
   applyUI();  
