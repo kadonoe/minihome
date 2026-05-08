@@ -1560,6 +1560,27 @@
       <div class="modal-body" id="bookmark-list" style="background:var(--bg-color); padding: 16px;"></div>
     </div>
   </div>
+<!-- BGM 전용 플레이리스트 모달 -->
+  <div class="modal-overlay" id="bgm-playlist-modal">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <div class="modal-title">🎵 플레이리스트 (BGM) 목록 편집</div>
+        <button class="modal-close" onclick="closeModal('bgm-playlist-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="bgm-edit-list-container" style="margin-bottom: 16px; max-height: 250px; overflow-y: auto; background: var(--input-bg); border-radius: 8px; padding: 8px; border: 1px solid var(--border-color);">
+          <!-- 여기에 리스트가 자동 생성됩니다 -->
+        </div>
+        <div class="modal-group" style="background:#fff; padding:12px; border-radius:8px; border:1px solid var(--border-dark);">
+          <label class="modal-label" style="color:var(--primary-color);">새로운 음악 직접 추가</label>
+          <input type="text" class="input-field" id="pl-bgm-name" style="width:100%; margin-bottom:8px; font-weight:bold;" placeholder="음악 제목 (입력 안하면 자동 생성)">
+          <input type="text" class="input-field" id="pl-bgm-url" style="width:100%; margin-bottom:8px;" placeholder="유튜브 링크 또는 MP3 주소 (https://...)">
+          <input type="file" id="pl-bgm-file" class="input-field" accept="audio/*" style="width:100%; padding:8px 12px; font-size:12px; background:#fff; margin-bottom:8px;">
+          <button class="btn-save" style="width: 100%; font-size:13px; padding:10px;" onclick="addTrackToPlaylist()">+ 목록에 추가하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div id="toast"></div>
 <script type="module">
@@ -3173,19 +3194,23 @@ function applyUI() {
       playerHtml = `<audio id="bgm-player-audio" autoplay style="display:none;" onended="playNextBgm()"><source src="${bgmUrl}"></audio>`;
     }
 
-    // 🔥 사이즈 최적화 및 흐르는 텍스트 구조로 변경
+   // 🔥 사이즈 최적화 및 흐르는 텍스트 구조로 변경 (+ 플레이리스트 버튼 추가)
     bgmContainer.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:6px; padding: 0 2px; box-sizing: border-box; width: 100%;">
-        <!-- 제목 영역 (클릭 시 하단 진행바 열림/닫힘) -->
-        <div style="display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; width:100%;" onclick="const wrap = document.getElementById('bgm-controls-wrap'); wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';" title="클릭하여 재생 컨트롤 열기/닫기">
-          <div id="bgm-note" style="font-size:14px; transition:0.3s; flex-shrink:0;">🎵</div>
+        <!-- 제목 영역 -->
+        <div style="display:flex; align-items:center; justify-content:center; gap:6px; width:100%;">
+          <div id="bgm-note" style="font-size:14px; transition:0.3s; flex-shrink:0; cursor:pointer;" onclick="const wrap = document.getElementById('bgm-controls-wrap'); wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';" title="클릭하여 재생 컨트롤 열기/닫기">🎵</div>
           
           <!-- 흐르는 텍스트 창 (130px 고정) -->
-          <div style="flex:1; width: 130px; overflow:hidden; position:relative; height:16px; display:flex; align-items:center;">
+          <div style="flex:1; width: 130px; overflow:hidden; position:relative; height:16px; display:flex; align-items:center; cursor:pointer;" onclick="const wrap = document.getElementById('bgm-controls-wrap'); wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';" title="클릭하여 컨트롤 열기/닫기">
             <div id="bgm-title-text" class="bgm-title-marquee" title="${bgmName}">${bgmName}</div>
           </div>
           
-          <div style="flex-shrink:0;">${nextBtnHtml}</div>
+          <!-- BGM 조작 버튼 묶음 -->
+          <div style="flex-shrink:0; display:flex; align-items:center; gap:4px;">
+            ${nextBtnHtml}
+            <button onclick="openPlaylistEditor(); event.stopPropagation();" style="background:none; border:none; cursor:pointer; font-size:13px; color:var(--text-sub); padding:0 2px;" title="플레이리스트 편집">📑</button>
+          </div>
         </div>
         
         <!-- 진행바 및 컨트롤 영역 (기본 숨김) -->
@@ -3885,7 +3910,108 @@ window.inlineEdit = function(type) {
     toast('수정되었습니다!');
   }
 };
+// === BGM 플레이리스트 편집 전용 기능 ===
+window.openPlaylistEditor = function() {
+  if (!state.homepage.bgmList) state.homepage.bgmList =[];
+  window.renderBgmEditList();
+  openModal('bgm-playlist-modal');
+};
 
+window.renderBgmEditList = function() {
+  const container = document.getElementById('bgm-edit-list-container');
+  const list = state.homepage.bgmList ||[];
+  if (list.length === 0) {
+    container.innerHTML = '<div class="empty-state" style="margin: 20px 0; font-size: 13px;">등록된 음악이 없습니다.</div>';
+    return;
+  }
+  container.innerHTML = list.map((bgm, i) => `
+    <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; border:1px solid var(--border-dark); padding:8px 10px; margin-bottom:6px; border-radius:6px; font-size:12.5px; transition:0.2s; ${i === window.currentBgmIndex ? 'border-color: var(--primary-color); box-shadow: 0 0 0 1px var(--primary-color); background:#f0f4ff;' : ''}">
+      
+      <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer; font-weight:${i === window.currentBgmIndex ? 'bold' : 'normal'}; color:${i === window.currentBgmIndex ? 'var(--primary-color)' : 'var(--text-main)'};" onclick="playSpecificTrack(${i})" title="클릭하여 즉시 재생">
+        ${i === window.currentBgmIndex ? '▶ ' : ''}${i+1}. ${bgm.name}
+      </div>
+      
+      <div style="display:flex; gap:4px; flex-shrink:0; margin-left: 8px;">
+        <button onclick="moveTrack(${i}, -1)" style="background:var(--input-bg); border:1px solid var(--border-dark); border-radius:4px; cursor:pointer; padding:4px 6px; font-size:10px; color:var(--text-sub);" title="위로">▲</button>
+        <button onclick="moveTrack(${i}, 1)" style="background:var(--input-bg); border:1px solid var(--border-dark); border-radius:4px; cursor:pointer; padding:4px 6px; font-size:10px; color:var(--text-sub);" title="아래로">▼</button>
+        <button onclick="removeTrack(${i})" style="background:#fecaca; color:var(--danger); border:1px solid #fca5a5; border-radius:4px; cursor:pointer; padding:4px 6px; font-weight:bold; font-size:10px;" title="삭제">✕</button>
+      </div>
+    </div>
+  `).join('');
+};
+
+window.playSpecificTrack = function(index) {
+  window.currentBgmIndex = index;
+  applyUI();
+  window.renderBgmEditList();
+};
+
+window.moveTrack = function(index, dir) {
+  const list = state.homepage.bgmList;
+  if (index + dir < 0 || index + dir >= list.length) return;
+  
+  // 배열 위치 변경
+  const temp = list[index];
+  list[index] = list[index + dir];
+  list[index + dir] = temp;
+  
+  // 재생 중인 곡 인덱스도 꼬이지 않게 맞춰줌
+  if (window.currentBgmIndex === index) window.currentBgmIndex = index + dir;
+  else if (window.currentBgmIndex === index + dir) window.currentBgmIndex = index;
+  
+  saveData();
+  window.renderBgmEditList();
+};
+
+window.removeTrack = function(index) {
+  if(!confirm('이 음악을 플레이리스트에서 삭제하시겠습니까?')) return;
+  state.homepage.bgmList.splice(index, 1);
+  
+  if (window.currentBgmIndex >= state.homepage.bgmList.length) {
+    window.currentBgmIndex = 0; applyUI(); 
+  } else if (window.currentBgmIndex === index) {
+    applyUI(); // 지운 곡이 현재 재생중이던 곡이면 다음 곡으로 넘어감
+  } else if (window.currentBgmIndex > index) {
+    window.currentBgmIndex--; 
+  }
+  saveData(); window.renderBgmEditList();
+};
+
+window.addTrackToPlaylist = async function() {
+  const customName = document.getElementById('pl-bgm-name').value.trim();
+  const urlInput = document.getElementById('pl-bgm-url').value.trim(); 
+  const bgmFile = document.getElementById('pl-bgm-file').files[0];
+  
+  if (!state.homepage.bgmList) state.homepage.bgmList =[];
+  let trackObj = null;
+
+  if (bgmFile) { 
+    const fileName = customName || bgmFile.name; 
+    const reader = new FileReader(); 
+    const b64 = await new Promise(res => { reader.onload = e => res(e.target.result); reader.readAsDataURL(bgmFile); });
+    trackObj = { name: fileName, url: b64 };
+  } else if (urlInput) {
+    let fileName = customName;
+    if (!fileName) {
+      fileName = urlInput.split('/').pop().split('?')[0] || '외부 링크 음악';
+      try { fileName = decodeURIComponent(fileName); } catch(e){}
+    }
+    trackObj = { name: fileName, url: urlInput };
+  } else { 
+    return toast('파일을 첨부하거나 URL 주소를 입력하세요.'); 
+  }
+  
+  state.homepage.bgmList.push(trackObj);
+  saveData();
+  
+  document.getElementById('pl-bgm-name').value = ''; 
+  document.getElementById('pl-bgm-url').value = ''; 
+  document.getElementById('pl-bgm-file').value = ''; 
+  
+  if (state.homepage.bgmList.length === 1) { window.currentBgmIndex = 0; applyUI(); }
+  window.renderBgmEditList();
+  toast('음악이 추가되었습니다!');
+};
 Object.assign(window, {
   loadData, saveData, exportData, importData, switchPage, openModal, closeModal, applyUI, getAvatarHTML,
   saveHomepageLayout, compressImage, saveDatabase, saveScenario, saveSettings, updateProviderUI,
@@ -3893,7 +4019,8 @@ Object.assign(window, {
   renderChatList, openChatRoom, closeChatRoom, openCharModal, saveCharacter, deleteCharacter,
   buildPrompt, callAPI, parseMD, refreshChatUI, renderMsg, renderLineMsg, showTyping, removeTyping, sendChat, insertText, chatKey,
   editMsg, saveEdit, regenerateMsg, toggleBookmark, copyMsg, renderBookmarks, deleteBookmark, toast,
-  saveVideoItem, renderVideos, openVideoModal, closeVideoModal
+  saveVideoItem, renderVideos, openVideoModal, closeVideoModal,
+  openPlaylistEditor, renderBgmEditList, playSpecificTrack, moveTrack, removeTrack, addTrackToPlaylist // 새로 추가된 부분!
 });
 </script>
 </body>
