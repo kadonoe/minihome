@@ -1439,6 +1439,10 @@
           </label>
           <input type="file" id="th-deco-file" class="input-field" accept="image/*" style="width:100%; padding:8px 12px; font-size:12px; background:#fff; margin-bottom:8px;">
           <input type="text" id="th-deco-url" class="input-field" style="width:100%; font-size:12px; background:#fff; margin-bottom:12px;" placeholder="외부 이미지 링크 (https://...)">
+          <!-- ▼ 추가된 부분: 투명화 체크박스 ▼ -->
+          <label style="font-size:12px; color:var(--primary-color); font-weight:bold; display:block; margin-bottom:12px;">
+            <input type="checkbox" id="th-deco-remove-white"> 🪄 흰색 배경 투명하게 지우기
+          </label>
           
           <div style="display:flex; gap:10px; margin-bottom:12px;">
             <div style="flex:1;">
@@ -3708,11 +3712,17 @@ window.saveThemeExt = async function(isSilent = false) {
   } else {
     const file = document.getElementById('th-deco-file').files[0];
     const url = document.getElementById('th-deco-url').value.trim();
+    // ▼ 추가/수정된 부분 ▼
+    const removeWhite = document.getElementById('th-deco-remove-white').checked; 
+    
     if (file) {
-      ext.decoUrl = await new Promise(res => compressImage(file, res));
+      // 파라미터 전달: file, callback, maxWidth(1000), removeWhite(체크여부)
+      ext.decoUrl = await new Promise(res => compressImage(file, res, 1000, removeWhite));
     } else if (url) {
-      ext.decoUrl = url;
+      // URL 이미지도 투명화 엔진 태우기
+      ext.decoUrl = await processImageUrl(url, removeWhite);
     }
+    // ▲ 여기까지 ▲
   }
   ext.decoAnim = document.getElementById('th-deco-anim').value;
   ext.decoAction = document.getElementById('th-deco-action').value;
@@ -3913,7 +3923,7 @@ window.inlineEdit = function(type) {
   } else if (type === 'homeRules') {
     val = prompt('SYSTEM RULES 내용을 입력하세요:', state.homepage.rules);
     if (val !== null) state.homepage.rules = val;
-  } 
+  }  
   else if (type === 'profileImg' || type === 'homeImg') {
     let input = document.getElementById('inline-img-input');
     if(!input) {
@@ -3927,9 +3937,7 @@ window.inlineEdit = function(type) {
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if(file) {
-        // ✨ 투명화 여부 묻기
-        const removeWhite = confirm('🪄 사진의 흰색 배경을 투명하게 만드시겠습니까?\\n\\n[확인]=투명하게 지우기 / [취소]=원본 유지');
-        const b64 = await new Promise(res => compressImage(file, res, 1000, removeWhite));
+        const b64 = await new Promise(res => compressImage(file, res));
         if (type === 'profileImg') state.ui.plImg = b64;
         if (type === 'homeImg') state.homepage.mainImg = b64;
         saveData(); applyUI(); toast('사진이 변경되었습니다!');
@@ -3937,22 +3945,13 @@ window.inlineEdit = function(type) {
       input.value = '';
     };
 
-    if(confirm('기기에서 이미지 파일을 직접 선택하시겠습니까?\\n(취소를 누르면 인터넷 URL 링크를 입력하거나 삭제할 수 있습니다)')) {
+    if(confirm('기기에서 이미지 파일을 직접 선택하시겠습니까?\n(취소를 누르면 인터넷 URL 링크를 입력하거나 삭제할 수 있습니다)')) {
       input.click();
     } else {
       const url = prompt('이미지 URL을 입력하세요 (사진을 지우려면 빈칸으로 두고 확인):');
       if (url !== null) {
-        const trimUrl = url.trim();
-        if (trimUrl) {
-          // ✨ 투명화 여부 묻기
-          const removeWhite = confirm('🪄 사진의 흰색 배경을 투명하게 지우시겠습니까?\\n\\n[확인]=투명하게 지우기 / [취소]=원본 유지');
-          const finalUrl = await processImageUrl(trimUrl, removeWhite);
-          if (type === 'profileImg') state.ui.plImg = finalUrl;
-          if (type === 'homeImg') state.homepage.mainImg = finalUrl;
-        } else {
-          if (type === 'profileImg') state.ui.plImg = null;
-          if (type === 'homeImg') state.homepage.mainImg = '';
-        }
+        if (type === 'profileImg') state.ui.plImg = url.trim() || null;
+        if (type === 'homeImg') state.homepage.mainImg = url.trim() || '';
         saveData(); applyUI(); toast('사진이 반영되었습니다!');
       }
     }
