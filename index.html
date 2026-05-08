@@ -882,17 +882,17 @@
     }
   }
   .bgm-title-marquee {
-    display: inline-block; white-space: nowrap; font-size: 11px;
+    display: inline-flex; white-space: nowrap; font-size: 11px;
     font-weight: 700; color: var(--text-main);
-    padding-right: 130px; /* 글자가 완전히 넘어가도록 여백 추가 */
+    width: max-content; /* 텍스트 너비에 맞춰서 크기 확보 */
   }
-  /* 재생 중일 때 텍스트가 오른쪽으로 이동하며 무한 반복 */
+  /* 재생 중일 때 텍스트가 끊김 없이 자연스럽게 이어지며 스크롤 */
   .bgm-title-marquee.playing {
-    animation: text-scroll-right 5s linear infinite;
+    animation: text-scroll-right-seamless 6s linear infinite;
   }
-  @keyframes text-scroll-right {
-    0% { transform: translateX(-130px); }
-    100% { transform: translateX(130px); }
+  @keyframes text-scroll-right-seamless {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0%); }
   }
 </style>
 </head>
@@ -3380,7 +3380,10 @@ function applyUI() {
           
           <!-- 흐르는 텍스트 창 (클릭 시 하단 설정바 열림) -->
           <div style="flex:1; width: 130px; overflow:hidden; position:relative; height:16px; display:flex; align-items:center; cursor:pointer; -webkit-tap-highlight-color: transparent;" onclick="const wrap = document.getElementById('bgm-controls-wrap'); wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';">
-            <div id="bgm-title-text" class="bgm-title-marquee">${bgmName}</div>
+            <div id="bgm-title-text" class="bgm-title-marquee">
+              <span style="padding-right: 40px;">${bgmName}</span>
+              <span style="padding-right: 40px;">${bgmName}</span>
+            </div>
           </div>
         </div>
         
