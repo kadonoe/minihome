@@ -120,6 +120,9 @@
     padding: 4px;
     z-index: 100;
   }
+  body.inline-edit-active .layout-edit-btn { display: block !important; }
+  body.inline-edit-active .layout-edit-btn::after { display: none; }
+  
   .mac-btns .red:hover::after { content: '✏️'; }
   .title-bar .title { font-weight: 700; font-size: 15px; text-align: center; flex: 1; letter-spacing: 0.5px; }
   .url-bar { width: 200px; background: var(--input-bg); border-radius: 6px; padding: 6px 12px; font-size: 12px; color: var(--text-muted); text-align: left; }
@@ -915,6 +918,9 @@
       
   <!-- 사이드바 -->
       <div class="sidebar">
+        <!-- 배경 수정 버튼 (수정 모드에서만 보임) -->
+        <div class="editable-el layout-edit-btn" onclick="inlineEdit('sidebarBg')" style="display:none; position:absolute; top:8px; left:8px; background:var(--primary-color); color:#fff; border-radius:4px; font-size:11px; padding:4px 8px; z-index:9999; font-weight:bold;">🎨 사이드바 배경 수정</div>
+        
         <!-- 상단 시계 & 테마 위젯 통합 영역 -->
         <div class="sidebar-top-bar">
           <div id="sidebar-realtime-clock" class="sidebar-clock"></div>
@@ -946,6 +952,9 @@
       </div>
 <!-- 우측 컨텐츠 -->
       <div class="content-area">
+        <!-- 배경 수정 버튼 (수정 모드에서만 보임) -->
+        <div class="editable-el layout-edit-btn" onclick="inlineEdit('contentBg')" style="display:none; position:absolute; top:8px; left:8px; background:var(--primary-color); color:#fff; border-radius:4px; font-size:11px; padding:4px 8px; z-index:9999; font-weight:bold;">🎨 우측 배경 수정</div>
+        
         <div class="content-top-bar">
   <div id="realtime-clock" style="font-weight: 600; font-size: 11.5px; letter-spacing: 0.5px;"></div>
 </div>
@@ -962,8 +971,7 @@
             <button class="dream-sub-btn" id="btn-sub-note" onclick="switchPage('note')" title="노트"><span id="sub-icon-note">📔</span></button>
           </div>
         </div>
-
-        <!-- 1. 홈 탭 -->
+<!-- 1. 홈 탭 -->
         <div id="page-home" class="page-section active-page">
           <div class="content-header">
             <h2 class="page-title">홈</h2><span class="breadcrumb">미니홈피 / 홈</span>
@@ -1152,7 +1160,14 @@
     </div>
   </div>
   
+ <!-- PC에서만 적용되고 모바일 탭 깨짐을 방지하는 스타일 -->
+  <style>
+    @media (min-width: 769px) { .side-tabs { position: relative; } }
+  </style>
   <div class="side-tabs">
+    <!-- 직접 수정 모드에서만 나타나는 탭 색상 수정 버튼 -->
+    <div class="editable-el layout-edit-btn" onclick="inlineEdit('tabStyle')" style="display:none; position:absolute; top:-20px; left:0; right:0; margin:auto; width:70px; text-align:center; background:var(--primary-color); color:#fff; border-radius:4px; font-size:11px; padding:6px 0; z-index:9999; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.1);">🎨 탭 색상</div>
+    
     <button class="tab active" onclick="switchPage('home', this)"><span class="icon" id="tab-icon-home">🏠</span><span class="text">홈</span></button>
     <button class="tab" id="main-tab-dream" onclick="switchDream()"><span class="icon" id="tab-icon-dream">🌙</span><span class="text">夢</span></button>
     <button class="tab" onclick="switchPage('diary', this)"><span class="icon" id="tab-icon-diary">📄</span><span class="text">일기</span></button>
@@ -1309,6 +1324,7 @@
       </div>
     </div>
   </div>
+
   <div class="modal-overlay" id="homepage-panel">
     <div class="modal-box" style="max-width: 600px;">
       <div class="modal-header">
@@ -1420,11 +1436,29 @@
 
         <hr style="border:0; border-top:1px dashed var(--border-dark); margin: 20px 0;">
 
-        <div class="modal-group">
-          <label class="modal-label">📝 외부 인터넷 폰트 적용 (눈누, 구글폰트 등)</label>
-          <input type="text" id="th-font-url" class="input-field" style="width:100%; margin-bottom:8px;" placeholder="@import URL (예: https://cdn.../font.css)">
-          <input type="text" id="th-font-family" class="input-field" style="width:100%;" placeholder="폰트 이름 (예: 'CookieRun')">
-          <label style="font-size:11px; color:var(--danger); display:block; margin-top:6px;"><input type="checkbox" id="th-font-clear"> 기본 폰트로 초기화</label>
+       <div class="modal-group">
+          <label class="modal-label">📝 나만의 폰트 보관함 (여러 개 추가 가능)</label>
+          <div id="custom-font-list-ui" style="margin-bottom:8px; font-size:12px; color:var(--text-sub); max-height:100px; overflow-y:auto; background:var(--input-bg); border-radius:6px; padding:6px; border:1px solid var(--border-color);">
+            <!-- 추가된 폰트 목록이 표시됩니다 -->
+          </div>
+          <div style="display:flex; gap:6px; margin-bottom:12px;">
+            <input type="text" id="new-font-url" class="input-field" style="flex:2; font-size:11px; padding:6px;" placeholder="폰트 URL (.woff, .css)">
+            <input type="text" id="new-font-family" class="input-field" style="flex:1; font-size:11px; padding:6px;" placeholder="폰트명 (영문권장)">
+            <button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="addCustomFont()">+ 추가</button>
+          </div>
+          
+          <label class="modal-label">홈피 기본 폰트 선택</label>
+          <select id="th-font-preset" class="input-field" style="width:100%; margin-bottom:8px;">
+            <option value="">(기본) Pretendard</option>
+            <option value="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Regular.woff|'CookieRun'">🍪 쿠키런체</option>
+            <option value="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10@21.0/NEXON Lv1 Gothic OTF.woff|'NEXON Lv1 Gothic OTF'">🎮 넥슨 레벨1 고딕</option>
+            <option value="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/MaplestoryOTFLight.woff|'MaplestoryOTFLight'">🍁 메이플스토리체</option>
+            <option value="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2202-2@1.0/GmarketSansMedium.woff|'GmarketSansMedium'">🛍️ 지마켓 산스</option>
+            <option value="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/RIDIBatang.woff|'RIDIBatang'">📖 리디바탕 (소설용)</option>
+            <option value="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/KCC-Ganpan.woff2|'KCC-Ganpan'">🖌️ KCC 간판체</option>
+            <!-- 커스텀 폰트들이 이 아래에 자동 추가됩니다 -->
+          </select>
+          <label style="font-size:11px; color:var(--danger); display:block; margin-top:6px;"><input type="checkbox" id="th-font-clear"> 기본체로 초기화</label>
         </div>
 
         <div class="modal-group" style="background:#fdfdfd; padding:16px; border-radius:12px; border:1px solid var(--border-color);">
@@ -1602,7 +1636,80 @@
     </div>
   </div>
 
+  <!-- 🎨 상세 스타일 편집 모달 -->
+  <div class="modal-overlay" id="inline-style-panel">
+    <div class="modal-box" style="max-width: 450px;">
+      <div class="modal-header">
+        <div class="modal-title">🎨 요소 상세 수정</div>
+        <button class="modal-close" onclick="closeModal('inline-style-panel')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="is-target-id">
+        
+        <div class="modal-group" id="is-text-group">
+          <label class="modal-label">텍스트 내용</label>
+          <textarea class="input-field" id="is-text-val" style="width:100%; min-height:60px;"></textarea>
+        </div>
+        
+        <div style="display:flex; gap:10px; margin-bottom:16px;">
+          <div style="flex:1;">
+            <label class="modal-label">글자 크기</label>
+            <input type="text" class="input-field" id="is-font-size" style="width:100%;" placeholder="예: 15px, 1.2em">
+          </div>
+          <div style="flex:1;">
+            <label class="modal-label">글꼴 (폰트)</label>
+            <input type="text" class="input-field" id="is-font-family" style="width:100%;" placeholder="예: 궁서체, serif">
+          </div>
+        </div>
+        
+     <div style="padding:12px; background:var(--input-bg); border-radius:8px; border:1px solid var(--border-color); margin-bottom:20px;">
+          <div style="font-size:11px; font-weight:bold; color:var(--primary-color); margin-bottom:12px;">👆 색상 상세 설정 (기본 및 선택 시)</div>
+          
+          <div style="display:flex; gap:10px; margin-bottom:12px;">
+            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+              <span style="font-size:10.5px; font-weight:bold; color:var(--text-main);" id="lbl-is-color">글자 색상 (기본)</span>
+              <div style="display:flex; gap:4px; align-items:center;">
+                <input type="color" id="is-color-picker" style="width:24px; height:24px; padding:0; border:none; border-radius:4px; cursor:pointer;" oninput="document.getElementById('is-color').value = this.value">
+                <input type="text" class="input-field" id="is-color" style="flex:1; padding:4px 6px; font-size:11px;" placeholder="#000000" oninput="try{document.getElementById('is-color-picker').value = this.value}catch(e){}">
+              </div>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+              <span style="font-size:10.5px; font-weight:bold; color:var(--text-main);" id="lbl-is-bg-color">배경 색상 (기본)</span>
+              <div style="display:flex; gap:4px; align-items:center;">
+                <input type="color" id="is-bg-color-picker" style="width:24px; height:24px; padding:0; border:none; border-radius:4px; cursor:pointer;" oninput="document.getElementById('is-bg-color').value = this.value">
+                <input type="text" class="input-field" id="is-bg-color" style="flex:1; padding:4px 6px; font-size:11px;" placeholder="transparent" oninput="try{document.getElementById('is-bg-color-picker').value = this.value}catch(e){}">
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px;">
+            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+              <span style="font-size:10.5px; font-weight:bold; color:var(--text-main);" id="lbl-is-a-color">눌렀을 때 글자색 (Active)</span>
+              <div style="display:flex; gap:4px; align-items:center;">
+                <input type="color" id="is-a-color-picker" style="width:24px; height:24px; padding:0; border:none; border-radius:4px; cursor:pointer;" oninput="document.getElementById('is-a-color').value = this.value">
+                <input type="text" class="input-field" id="is-a-color" style="flex:1; padding:4px 6px; font-size:11px;" placeholder="#aa0000" oninput="try{document.getElementById('is-a-color-picker').value = this.value}catch(e){}">
+              </div>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+              <span style="font-size:10.5px; font-weight:bold; color:var(--text-main);" id="lbl-is-a-bg-color">눌렀을 때 배경색 (Active)</span>
+              <div style="display:flex; gap:4px; align-items:center;">
+                <input type="color" id="is-a-bg-color-picker" style="width:24px; height:24px; padding:0; border:none; border-radius:4px; cursor:pointer;" oninput="document.getElementById('is-a-bg-color').value = this.value">
+                <input type="text" class="input-field" id="is-a-bg-color" style="flex:1; padding:4px 6px; font-size:11px;" placeholder="#cccccc" oninput="try{document.getElementById('is-a-bg-color-picker').value = this.value}catch(e){}">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="display:flex; gap:10px;">
+           <button class="btn-save" style="flex:2;" onclick="saveInlineStyle()">적용 및 저장</button>
+           <button class="btn-outline" style="flex:1; color:var(--danger); border-color:var(--danger);" onclick="resetInlineStyle()">초기화</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="toast"></div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -1630,7 +1737,7 @@ let state = {
   diaries:[],
   db: { core: 'OOC 차단. 시스템 메시지 금지.', scripts: '', playerPrompt: '의료/기술 스태프. 다정하고 차분한 성격.' },
   scenario: { context: '현재 칼데아의 복도.', extra: '' },
-  ui: { plName: '이름', plEmoji: '❄️', plRole: '의료/기술 스태프', plImg: null, icons: { home: '🏠', dream: '🌙', gallery: '📷', video: '🎬', diary: '📄', chat: '💬', note: '📔', settings: '⚙️' }, themeExt: { bg:'', btn:'', bubble:'', win:'', font:'' } },
+  ui: { plName: '이름', plEmoji: '❄️', plRole: '의료/기술 스태프', plImg: null, icons: { home: '🏠', dream: '🌙', gallery: '📷', video: '🎬', diary: '📄', chat: '💬', note: '📔', settings: '⚙️' }, themeExt: { bg:'', btn:'', bubble:'', win:'', font:'' }, customStyles: {} },
   settings: { provider: 'none', keys: { anthropic: '', openai: '', google: '' }, models: { anthropic: 'claude-3-5-sonnet-20241022', openai: 'gpt-4o', google: 'gemini-2.5-flash' }, maxTokens: 1500, temp: 0.8 },
   bookmarks:[],
   characters:[], 
@@ -1899,6 +2006,7 @@ async function loadData() {
       if(p.ui) {
         Object.assign(state.ui, p.ui);
         if(!state.ui.icons) state.ui.icons = { home: '🏠', gallery: '📷', diary: '📄', chat: '💬', note: '📔', settings: '⚙️' };
+        if(!state.ui.customStyles) state.ui.customStyles = {};
       }      
       if(p.settings) Object.assign(state.settings, p.settings);
       if(p.bookmarks) state.bookmarks = p.bookmarks;
@@ -2233,7 +2341,7 @@ window.renderNoteList = function(q = "") {
 window.searchNote = function() { window.renderNoteList(document.getElementById('note-search').value); };
 
 window.createNewNote = function() {
-  const newNote = { id: Date.now(), title: '', pages: [{ text: '', stickers: [] }] };
+  const newNote = { id: Date.now(), title: '', pages:[{ text: '', stickers: [] }] };
   state.notes.unshift(newNote); saveData(); window.openNote(newNote.id);
 };
 
@@ -2370,6 +2478,7 @@ async function processImageUrl(url, removeWhite, maxWidth = 1000) {
     img.src = url;
   });
 }
+
 window.saveUI = async function() {
   state.ui.plName = document.getElementById('ui-pl-name').value || 'Player'; 
   state.ui.plEmoji = document.getElementById('ui-pl-emoji').value || '❄️'; 
@@ -2395,6 +2504,7 @@ window.saveUI = async function() {
   refreshChatUI('chat'); 
   toast('프로필 설정이 성공적으로 저장되었습니다!');
 }
+
 function saveDatabase() { 
   state.db.core=document.getElementById('db-core').value; 
   state.db.scripts=document.getElementById('db-scripts').value; 
@@ -2576,7 +2686,9 @@ function closeVideoModal() {
   if (window.currentModalYtPlayer) window.currentModalYtPlayer = null;
   // 창을 닫을 때 무조건 BGM을 다시 살림 (원래 틀어져 있었을 경우에만)
   if (window.bgmController) window.bgmController.resume();
-}function openPhotoModal(id) { 
+}
+
+function openPhotoModal(id) { 
   const g = state.gallery.find(x => x.id === id); if(!g) return; 
   document.getElementById('pm-img').src = g.url; 
   document.getElementById('pm-title').innerHTML = `${g.title} <span style="font-size:11px; color:var(--primary-color); font-weight:normal;">${g.author || ''}</span>`; 
@@ -2650,7 +2762,7 @@ ${modeText}[필수 출력 형식] 응답의 가장 첫 부분에는 과거 대�
   • 🔞체위:[{해당 없음 등}]
   • 👕의상:[{등장인물들의 현재 의상}]
   • 💬상태:[{현재 상황 및 분위기 요약}]
-\`\`\`[주의사항] 대답할 때 대화 맨 앞에 [LINE] 이나 [대면] 같은 태그는 절대로 출력하지 마세요! 오직 당신의 응답 내용만 출력하세요.`;
+\`\`\`[주의사항] 대답할 때 대화 맨 앞에[LINE] 이나 [대면] 같은 태그는 절대로 출력하지 마세요! 오직 당신의 응답 내용만 출력하세요.`;
 
     if (isSysCmd) {
         base += `\n\n[🚨 URGENT SYSTEM INSTRUCTION 🚨]\n방금 유저가 시스템 명령어("${lastMsg.replace('[SYSTEM COMMAND] ','')}")를 입력했습니다. 이번 턴에는 캐릭터 연기를 멈추고 시스템으로서 유저의 명령어 결과만을 생생하게 출력하세요.`;
@@ -3374,8 +3486,7 @@ function applyUI() {
         initYtPlayer();
       }
     }, 100);
-  } else
- { 
+  } else { 
     bgmContainer.innerHTML = `<div class="bgm-error" style="border:none; height:auto; padding:4px;">등록된 음악 없음</div>`; 
   }
   document.getElementById('sidebar-name').textContent = state.ui.plName; document.getElementById('sidebar-role').textContent = state.ui.plRole;
@@ -3387,6 +3498,9 @@ function applyUI() {
   if (state.rps) Object.values(state.rps).forEach(arr => totalChats += arr.length);
   document.getElementById('count-chat').textContent = totalChats;
   document.getElementById('count-archive').textContent = state.bookmarks.length;
+  
+  // 커스텀 스타일 동기화 호출
+  if(window.applyCustomStyles) window.applyCustomStyles();
 }
 
 async function saveGalleryItem() { 
@@ -3485,7 +3599,7 @@ async function callAPI(messages, mode, targetId, isLine) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt }] },
+        system_instruction: { parts:[{ text: systemPrompt }] },
         contents: messages.map(m => ({
           role: m.role === 'assistant' ? 'model' : 'user',
           parts:[{ text: m.content }]
@@ -3514,6 +3628,7 @@ function parseMD(text) {
     .replace(/'/g, "&#039;")
     .replace(/\n/g, '<br>');
 }
+
 window.addEditBlock = function(id, type) {
     const container = document.getElementById(`edit-blocks-${id}`);
     if (!container) return;
@@ -3736,6 +3851,7 @@ window.applyTabIconText = async function(inputId) {
   applyUI();
   toast('아이콘이 성공적으로 적용되었습니다!');
 };
+
 window.applyCustomTheme = function(hexColor) {
   const { h, s, l } = hexToHSL(hexColor);
   const target = document.body; 
@@ -3772,24 +3888,80 @@ window.setThemeOpt = function(type, btn) {
   }
 };
 
+
+window.renderCustomFontList = function() {
+  const ui = document.getElementById('custom-font-list-ui');
+  const select = document.getElementById('th-font-preset');
+  if(!state.ui.customFonts) state.ui.customFonts =[];
+  
+  if(state.ui.customFonts.length === 0) {
+    ui.innerHTML = '추가된 나만의 폰트가 없습니다.';
+  } else {
+    ui.innerHTML = state.ui.customFonts.map((f, i) => `
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:4px 8px; margin-bottom:4px; border-radius:4px; border:1px solid var(--border-dark);">
+        <span style="font-size:11px;"><b>${f.family}</b> <span style="opacity:0.5;">(${f.url.split('/').pop().substring(0,10)}...)</span></span>
+        <button onclick="removeCustomFont(${i})" style="color:var(--danger); background:none; border:none; cursor:pointer; font-size:11px; font-weight:bold;">✕</button>
+      </div>
+    `).join('');
+  }
+
+  document.querySelectorAll('.custom-font-opt').forEach(el => el.remove());
+  state.ui.customFonts.forEach(f => {
+    const opt = document.createElement('option');
+    opt.className = 'custom-font-opt';
+    opt.value = `${f.url}|'${f.family}'`;
+    opt.innerHTML = `⭐ ${f.family}`;
+    select.appendChild(opt);
+  });
+};
+
+window.addCustomFont = function() {
+  const url = document.getElementById('new-font-url').value.trim();
+  const family = document.getElementById('new-font-family').value.trim();
+  if(!url || !family) return toast('폰트 링크와 폰트명을 모두 입력해주세요.');
+  if(!state.ui.customFonts) state.ui.customFonts =[];
+  state.ui.customFonts.push({ url, family });
+  saveData();
+  document.getElementById('new-font-url').value = '';
+  document.getElementById('new-font-family').value = '';
+  window.renderCustomFontList();
+  applyThemeExtClasses();
+  toast('폰트 보관함에 추가되었습니다!');
+};
+
+window.removeCustomFont = function(index) {
+  state.ui.customFonts.splice(index, 1);
+  saveData();
+  window.renderCustomFontList();
+  applyThemeExtClasses();
+};
+
 const originalOpenModal = window.openModal;
 window.openModal = function(id) {
   originalOpenModal(id);
   if(id === 'theme-ext-panel') {
-    const ext = state.ui.themeExt || { bg:'', btn:'', bubble:'', win:'', fontUrl:'', fontFamily:'', decoUrl:'', decoAnim:'', decoAction:'', decoOp: 1.0, decoScale: 1.0 };
-    ['bg', 'btn', 'bubble', 'win'].forEach(type => {
+    const ext = state.ui.themeExt || { bg:'', btn:'', bubble:'', win:'', fontUrl:'', fontFamily:'', decoUrl:'', decoAnim:'', decoAction:'', decoOp: 1.0, decoScale: 1.0 };['bg', 'btn', 'bubble', 'win'].forEach(type => {
       const val = ext[type] || '';
       document.getElementById('th-' + type).value = val;
       const grid = document.getElementById('th-' + type + '-grid');
       if(grid) {
-        grid.querySelectorAll('.theme-opt-btn').forEach(b => {
-          b.classList.toggle('active', b.getAttribute('data-val') === val);
-        });
+        grid.querySelectorAll('.theme-opt-btn').forEach(b => { b.classList.toggle('active', b.getAttribute('data-val') === val); });
       }
     });
 
-    document.getElementById('th-font-url').value = ext.fontUrl || '';
-    document.getElementById('th-font-family').value = ext.fontFamily || '';
+    window.renderCustomFontList();
+    
+    const presetSelect = document.getElementById('th-font-preset');
+    if (ext.fontUrl && ext.fontFamily) {
+      const matchVal = `${ext.fontUrl}|${ext.fontFamily}`;
+      let found = false;
+      for (let i = 0; i < presetSelect.options.length; i++) {
+        if (presetSelect.options[i].value === matchVal) { presetSelect.selectedIndex = i; found = true; break; }
+      }
+    } else {
+      presetSelect.value = '';
+    }
+
     document.getElementById('th-deco-url').value = ext.decoUrl || '';
     document.getElementById('th-deco-anim').value = ext.decoAnim || '';
     document.getElementById('th-deco-action').value = ext.decoAction || '';
@@ -3812,8 +3984,11 @@ window.saveThemeExt = async function(isSilent = false) {
   if (document.getElementById('th-font-clear').checked) {
     ext.fontUrl = ''; ext.fontFamily = '';
   } else {
-    ext.fontUrl = document.getElementById('th-font-url').value.trim();
-    ext.fontFamily = document.getElementById('th-font-family').value.trim();
+    const presetVal = document.getElementById('th-font-preset').value;
+    if(presetVal) {
+      const parts = presetVal.split('|');
+      ext.fontUrl = parts[0]; ext.fontFamily = parts[1];
+    }
   }
 
   if (document.getElementById('th-deco-clear').checked) {
@@ -3821,35 +3996,21 @@ window.saveThemeExt = async function(isSilent = false) {
   } else {
     const file = document.getElementById('th-deco-file').files[0];
     const url = document.getElementById('th-deco-url').value.trim();
-    // ▼ 추가/수정된 부분 ▼
     const removeWhite = document.getElementById('th-deco-remove-white').checked; 
-    
-    if (file) {
-      // 파라미터 전달: file, callback, maxWidth(1000), removeWhite(체크여부)
-      ext.decoUrl = await new Promise(res => compressImage(file, res, 1000, removeWhite));
-    } else if (url) {
-      // URL 이미지도 투명화 엔진 태우기
-      ext.decoUrl = await processImageUrl(url, removeWhite);
-    }
-    // ▲ 여기까지 ▲
+    if (file) ext.decoUrl = await new Promise(res => compressImage(file, res, 1000, removeWhite));
+    else if (url) ext.decoUrl = await processImageUrl(url, removeWhite);
   }
   ext.decoAnim = document.getElementById('th-deco-anim').value;
   ext.decoAction = document.getElementById('th-deco-action').value;
   ext.decoOp = document.getElementById('th-deco-opacity').value;
   ext.decoScale = document.getElementById('th-deco-scale').value;
   
-  saveData();
-  applyThemeExtClasses();
-  if(!isSilent) {
-    closeModal('theme-ext-panel');
-    toast('상세 테마와 꾸밈 설정이 적용되었습니다.');
-  }
+  saveData(); applyThemeExtClasses();
+  if(!isSilent) { closeModal('theme-ext-panel'); toast('상세 테마와 폰트가 적용되었습니다.'); }
 };
 
 window.applyThemeExtClasses = function() {
-  const ext = state.ui.themeExt;
-  if(!ext) return;
-  
+  const ext = state.ui.themeExt; if(!ext) return;
   const classPrefixes =['bg-', 'btn-', 'bubble-', 'win-'];
   document.body.className = document.body.className.split(' ').filter(c => {
     return !classPrefixes.some(prefix => c.startsWith(prefix)) || c.startsWith('theme-');
@@ -3861,45 +4022,39 @@ window.applyThemeExtClasses = function() {
   if(ext.win) document.body.classList.add(ext.win);
 
   let styleTag = document.getElementById('dynamic-custom-font');
-  if(!styleTag) {
-    styleTag = document.createElement('style'); styleTag.id = 'dynamic-custom-font'; document.head.appendChild(styleTag);
+  if(!styleTag) { styleTag = document.createElement('style'); styleTag.id = 'dynamic-custom-font'; document.head.appendChild(styleTag); }
+  
+  let fontCss = '';
+  if(state.ui.customFonts) {
+    state.ui.customFonts.forEach(f => {
+      if(f.url.endsWith('.css') || f.url.includes('googleapis')) fontCss += `@import url('${f.url}');\n`;
+      else fontCss += `@font-face { font-family: '${f.family.replace(/['"]/g, '')}'; src: url('${f.url}') format('woff2'), url('${f.url}') format('woff'); font-weight: normal; font-style: normal; }\n`;
+    });
   }
+
   if (ext.fontUrl && ext.fontFamily) {
-    styleTag.innerHTML = `@import url('${ext.fontUrl}'); * { font-family: ${ext.fontFamily}, 'Pretendard', sans-serif !important; }`;
-  } else { styleTag.innerHTML = ''; }
+    if ((ext.fontUrl.endsWith('.css') || ext.fontUrl.includes('googleapis')) && !fontCss.includes(ext.fontUrl)) {
+      fontCss += `@import url('${ext.fontUrl}');\n`;
+    } else if(!fontCss.includes(ext.fontFamily)) {
+      fontCss += `@font-face { font-family: ${ext.fontFamily.replace(/['"]/g, '')}; src: url('${ext.fontUrl}') format('woff2'), url('${ext.fontUrl}') format('woff'); font-weight: normal; font-style: normal; }\n`;
+    }
+    fontCss += `* { font-family: ${ext.fontFamily}, 'Pretendard', sans-serif !important; }`;
+  }
+  styleTag.innerHTML = fontCss;
 
   let decoLayer = document.getElementById('deco-layer');
-  if(!decoLayer) {
-    decoLayer = document.createElement('img'); decoLayer.id = 'deco-layer'; document.body.appendChild(decoLayer);
-    initDecoDragAndClick(); 
-  }
-  
+  if(!decoLayer) { decoLayer = document.createElement('img'); decoLayer.id = 'deco-layer'; document.body.appendChild(decoLayer); initDecoDragAndClick(); }
   if (ext.decoUrl) {
-    decoLayer.src = ext.decoUrl;
-    decoLayer.style.display = 'block';
-    decoLayer.style.pointerEvents = 'auto'; 
-    decoLayer.className = ext.decoAnim || '';
-    decoLayer.style.opacity = ext.decoOp;
-    
+    decoLayer.src = ext.decoUrl; decoLayer.style.display = 'block'; decoLayer.style.pointerEvents = 'auto'; 
+    decoLayer.className = ext.decoAnim || ''; decoLayer.style.opacity = ext.decoOp;
     decoLayer.style.width = (150 * (ext.decoScale || 1.0)) + 'px';
     if(ext.decoX !== undefined && ext.decoY !== undefined) {
-      decoLayer.style.position = 'fixed';
-      decoLayer.style.left = ext.decoX + 'px';
-      decoLayer.style.top = ext.decoY + 'px';
-      decoLayer.style.bottom = 'auto';
-      decoLayer.style.right = 'auto';
+      decoLayer.style.position = 'fixed'; decoLayer.style.left = ext.decoX + 'px'; decoLayer.style.top = ext.decoY + 'px'; decoLayer.style.bottom = 'auto'; decoLayer.style.right = 'auto';
     } else {
-      decoLayer.style.position = 'fixed';
-      decoLayer.style.bottom = '20px';
-      decoLayer.style.right = '20px';
-      decoLayer.style.left = 'auto';
-      decoLayer.style.top = 'auto';
+      decoLayer.style.position = 'fixed'; decoLayer.style.bottom = '20px'; decoLayer.style.right = '20px'; decoLayer.style.left = 'auto'; decoLayer.style.top = 'auto';
     }
-  } else {
-    decoLayer.style.display = 'none';
-  }
+  } else { decoLayer.style.display = 'none'; }
 };
-
 window.isDecoEditMode = false;
 
 window.toggleDecoEditMode = async function() {
@@ -4003,7 +4158,7 @@ window.toggleInlineEditMode = function() {
   body.classList.toggle('inline-edit-active');
   
   if (body.classList.contains('inline-edit-active')) {
-    toast('✏️ 화면 직접 수정 모드가 켜졌습니다!\n깜빡이는 텍스트나 프로필, 사진을 클릭해보세요.');
+    toast('✏️ 화면 직접 수정 모드가 켜졌습니다!\n깜빡이는 텍스트나 붓 모양 아이콘을 눌러주세요.');
   } else {
     toast('🔒 수정 모드가 종료되었습니다.');
   }
@@ -4012,28 +4167,8 @@ window.toggleInlineEditMode = function() {
 window.inlineEdit = function(type) {
   if (!document.body.classList.contains('inline-edit-active')) return;
 
-  let val = null;
-
-  if (type === 'appTitle') {
-    val = prompt('홈피 타이틀을 입력하세요:', state.homepage.title);
-    if (val !== null) state.homepage.title = val;
-  } else if (type === 'name') {
-    val = prompt('사용할 이름을 입력하세요:', state.ui.plName);
-    if (val !== null) state.ui.plName = val;
-  } else if (type === 'role') {
-    val = prompt('역할/소속을 입력하세요:', state.ui.plRole);
-    if (val !== null) state.ui.plRole = val;
-  } else if (type === 'mood') {
-    val = prompt('상태창(뱃지) 텍스트를 입력하세요:', state.homepage.badge);
-    if (val !== null) state.homepage.badge = val;
-  } else if (type === 'homeAbout') {
-    val = prompt('ABOUT ME 내용을 입력하세요 (줄바꿈 가능):', state.homepage.about);
-    if (val !== null) state.homepage.about = val;
-  } else if (type === 'homeRules') {
-    val = prompt('SYSTEM RULES 내용을 입력하세요:', state.homepage.rules);
-    if (val !== null) state.homepage.rules = val;
-  }  
-  else if (type === 'profileImg' || type === 'homeImg') {
+  // 사진 변경은 기존 로직(파일 첨부) 유지
+  if (type === 'profileImg' || type === 'homeImg') {
     let input = document.getElementById('inline-img-input');
     if(!input) {
       input = document.createElement('input');
@@ -4042,7 +4177,6 @@ window.inlineEdit = function(type) {
       input.style.display = 'none';
       document.body.appendChild(input);
     }
-    
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if(file) {
@@ -4053,7 +4187,6 @@ window.inlineEdit = function(type) {
       }
       input.value = '';
     };
-
     if(confirm('기기에서 이미지 파일을 직접 선택하시겠습니까?\n(취소를 누르면 인터넷 URL 링크를 입력하거나 삭제할 수 있습니다)')) {
       input.click();
     } else {
@@ -4067,13 +4200,133 @@ window.inlineEdit = function(type) {
     return; 
   }
 
-  if (val !== null) {
-    saveData();
-    applyUI();
-    toast('수정되었습니다!');
+  if(!state.ui.customStyles) state.ui.customStyles = {};
+  document.getElementById('is-target-id').value = type;
+
+  let currentText = '';
+  if (type === 'appTitle') currentText = state.homepage.title;
+  else if (type === 'name') currentText = state.ui.plName;
+  else if (type === 'role') currentText = state.ui.plRole;
+  else if (type === 'mood') currentText = state.homepage.badge;
+  else if (type === 'homeAbout') currentText = state.homepage.about;
+  else if (type === 'homeRules') currentText = state.homepage.rules;
+
+  const textGroup = document.getElementById('is-text-group');
+  if (type === 'sidebarBg' || type === 'contentBg' || type === 'tabStyle') textGroup.style.display = 'none';
+  else { textGroup.style.display = 'block'; document.getElementById('is-text-val').value = currentText; }
+
+  const lblColor = document.getElementById('lbl-is-color');
+  const lblBgColor = document.getElementById('lbl-is-bg-color');
+  const lblActiveColor = document.getElementById('lbl-is-a-color');
+  const lblActiveBg = document.getElementById('lbl-is-a-bg-color');
+
+  if (type === 'tabStyle') {
+    if(lblColor) lblColor.innerText = "탭 글자색 (기본)";
+    if(lblBgColor) lblBgColor.innerText = "탭 배경색 (기본)";
+    if(lblActiveColor) lblActiveColor.innerText = "탭 글자색 (선택됨/Active)";
+    if(lblActiveBg) lblActiveBg.innerText = "탭 배경색 (선택됨/Active)";
+  } else {
+    if(lblColor) lblColor.innerText = "글자 색상 (기본)";
+    if(lblBgColor) lblBgColor.innerText = "배경 색상 (기본)";
+    if(lblActiveColor) lblActiveColor.innerText = "눌렀을 때 글자색 (Active)";
+    if(lblActiveBg) lblActiveBg.innerText = "눌렀을 때 배경색 (Active)";
   }
+
+  const styles = state.ui.customStyles[type] || {};
+  document.getElementById('is-font-size').value = styles.fontSize || '';
+  document.getElementById('is-font-family').value = styles.fontFamily || '';
+  
+  const cVal = styles.color || ''; const bgVal = styles.backgroundColor || '';
+  const acVal = styles.aColor || ''; const abgVal = styles.aBgColor || '';
+
+  document.getElementById('is-color').value = cVal; document.getElementById('is-bg-color').value = bgVal;
+  document.getElementById('is-a-color').value = acVal; document.getElementById('is-a-bg-color').value = abgVal;
+
+  try { if (cVal.startsWith('#')) document.getElementById('is-color-picker').value = cVal.substring(0,7); } catch(e){}
+  try { if (bgVal.startsWith('#')) document.getElementById('is-bg-color-picker').value = bgVal.substring(0,7); } catch(e){}
+  try { if (acVal.startsWith('#')) document.getElementById('is-a-color-picker').value = acVal.substring(0,7); } catch(e){}
+  try { if (abgVal.startsWith('#')) document.getElementById('is-a-bg-color-picker').value = abgVal.substring(0,7); } catch(e){}
+
+  openModal('inline-style-panel');
 };
-// === BGM 플레이리스트 편집 전용 기능 ===
+
+window.saveInlineStyle = function() {
+  const type = document.getElementById('is-target-id').value;
+  const textVal = document.getElementById('is-text-val').value;
+
+  if (type === 'appTitle') state.homepage.title = textVal;
+  else if (type === 'name') state.ui.plName = textVal;
+  else if (type === 'role') state.ui.plRole = textVal;
+  else if (type === 'mood') state.homepage.badge = textVal;
+  else if (type === 'homeAbout') state.homepage.about = textVal;
+  else if (type === 'homeRules') state.homepage.rules = textVal;
+
+  if(!state.ui.customStyles) state.ui.customStyles = {};
+  state.ui.customStyles[type] = {
+    fontSize: document.getElementById('is-font-size').value.trim(),
+    fontFamily: document.getElementById('is-font-family').value.trim(),
+    color: document.getElementById('is-color').value.trim(),
+    backgroundColor: document.getElementById('is-bg-color').value.trim(),
+    aColor: document.getElementById('is-a-color').value.trim(),
+    aBgColor: document.getElementById('is-a-bg-color').value.trim()
+  };
+
+  saveData(); applyUI(); applyCustomStyles(); closeModal('inline-style-panel'); toast('상세 스타일이 적용되었습니다!');
+};
+
+window.resetInlineStyle = function() {
+  const type = document.getElementById('is-target-id').value;
+  if(state.ui.customStyles && state.ui.customStyles[type]) {
+    delete state.ui.customStyles[type]; saveData(); applyUI(); applyCustomStyles(); toast('스타일이 초기화되었습니다.');
+  }
+  closeModal('inline-style-panel');
+};
+
+window.applyCustomStyles = function() {
+  if(!state.ui.customStyles) return;
+  let styleTag = document.getElementById('dynamic-inline-styles');
+  if(!styleTag) { styleTag = document.createElement('style'); styleTag.id = 'dynamic-inline-styles'; document.head.appendChild(styleTag); }
+
+  const s = state.ui.customStyles;
+  let css = '';
+
+  const buildCSS = (selector, rules) => {
+    if(!rules) return '';
+    let normal = '', active = '';
+    
+    if(rules.fontSize) normal += `font-size: ${rules.fontSize} !important; `;
+    if(rules.fontFamily) normal += `font-family: ${rules.fontFamily} !important; `;
+    if(rules.color) normal += `color: ${rules.color} !important; transition: 0.2s; `;
+    if(rules.backgroundColor) normal += `background-color: ${rules.backgroundColor} !important; transition: 0.2s; `;
+    
+    if(rules.aColor) active += `color: ${rules.aColor} !important; `;
+    if(rules.aBgColor) active += `background-color: ${rules.aBgColor} !important; `;
+    
+    let res = '';
+    if(normal) res += `${selector} { ${normal} }\n`;
+    if(active) res += `${selector}:active { ${active} }\n`;
+    return res;
+  };
+
+  css += buildCSS('#app-title-display', s.appTitle);
+  css += buildCSS('#sidebar-name', s.name);
+  css += buildCSS('#sidebar-role', s.role);
+  css += buildCSS('#sidebar-mood', s.mood);
+  css += buildCSS('#home-about-display', s.homeAbout);
+  css += buildCSS('#home-rules-display', s.homeRules);
+  css += buildCSS('.sidebar', s.sidebarBg);
+  css += buildCSS('.content-area', s.contentBg);
+
+  if(s.tabStyle) {
+    if(s.tabStyle.color) css += `.side-tabs .tab .text, .side-tabs .tab .icon { color: ${s.tabStyle.color} !important; }\n`;
+    if(s.tabStyle.backgroundColor) css += `.side-tabs .tab { background-color: ${s.tabStyle.backgroundColor} !important; }\n`;
+    
+    if(s.tabStyle.aColor) css += `.side-tabs .tab.active .text, .side-tabs .tab.active .icon { color: ${s.tabStyle.aColor} !important; }\n`;
+    if(s.tabStyle.aBgColor) css += `.side-tabs .tab.active { background-color: ${s.tabStyle.aBgColor} !important; border-color: ${s.tabStyle.aBgColor} !important; }\n`;
+  }
+
+  styleTag.innerHTML = css;
+};// === BGM 플레이리스트 편집 전용 기능 ===
 window.openPlaylistEditor = function() {
   if (!state.homepage.bgmList) state.homepage.bgmList =[];
   window.renderBgmEditList();
@@ -4113,7 +4366,7 @@ window.renameTrack = function(index) {
     saveData();
     window.renderBgmEditList();
     if (window.currentBgmIndex === index) {
-      applyUI(); // 재생 중인 곡의 이름을 바꿨을 경우 메인 UI 텍스트도 즉시 업데이트
+      applyUI(); 
     }
   }
 };
@@ -4128,12 +4381,10 @@ window.moveTrack = function(index, dir) {
   const list = state.homepage.bgmList;
   if (index + dir < 0 || index + dir >= list.length) return;
   
-  // 배열 위치 변경
   const temp = list[index];
   list[index] = list[index + dir];
   list[index + dir] = temp;
   
-  // 재생 중인 곡 인덱스도 꼬이지 않게 맞춰줌
   if (window.currentBgmIndex === index) window.currentBgmIndex = index + dir;
   else if (window.currentBgmIndex === index + dir) window.currentBgmIndex = index;
   
@@ -4148,7 +4399,7 @@ window.removeTrack = function(index) {
   if (window.currentBgmIndex >= state.homepage.bgmList.length) {
     window.currentBgmIndex = 0; applyUI(); 
   } else if (window.currentBgmIndex === index) {
-    applyUI(); // 지운 곡이 현재 재생중이던 곡이면 다음 곡으로 넘어감
+    applyUI();
   } else if (window.currentBgmIndex > index) {
     window.currentBgmIndex--; 
   }
@@ -4198,7 +4449,7 @@ Object.assign(window, {
   buildPrompt, callAPI, parseMD, refreshChatUI, renderMsg, renderLineMsg, showTyping, removeTyping, sendChat, insertText, chatKey,
   editMsg, saveEdit, regenerateMsg, toggleBookmark, copyMsg, renderBookmarks, deleteBookmark, toast,
   saveVideoItem, renderVideos, openVideoModal, closeVideoModal,
-  openPlaylistEditor, renderBgmEditList, playSpecificTrack, moveTrack, removeTrack, addTrackToPlaylist, renameTrack // 👈 renameTrack 추가됨!
+  openPlaylistEditor, renderBgmEditList, playSpecificTrack, moveTrack, removeTrack, addTrackToPlaylist, renameTrack 
 });
 </script>
 </body>
