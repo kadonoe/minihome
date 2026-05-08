@@ -881,13 +881,14 @@
   .bgm-title-marquee {
     display: inline-block; white-space: nowrap; font-size: 11px;
     font-weight: 700; color: var(--text-main);
+    padding-right: 130px; /* 글자가 완전히 넘어가도록 여백 추가 */
   }
   /* 재생 중일 때 텍스트가 오른쪽으로 이동하며 무한 반복 */
   .bgm-title-marquee.playing {
-    animation: text-scroll-right 6s linear infinite;
+    animation: text-scroll-right 5s linear infinite;
   }
   @keyframes text-scroll-right {
-    0% { transform: translateX(-100%); }
+    0% { transform: translateX(-130px); }
     100% { transform: translateX(130px); }
   }
 </style>
@@ -3195,7 +3196,8 @@ function applyUI() {
           if (window.YT && window.YT.Player) {
             new YT.Player('bgm-player-yt', {
               videoId: ytId, host: 'https://www.youtube.com',
-              playerVars: { 'autoplay': 1, 'controls': 0, 'playsinline': 1 },
+              // 유튜브 광고 외의 쓸데없는 팝업/추천영상을 최소화하는 파라미터 추가
+              playerVars: { 'autoplay': 1, 'controls': 0, 'playsinline': 1, 'rel': 0, 'iv_load_policy': 3 },
               events: {
                 'onReady': function(event) {
                    event.target.playVideo();
