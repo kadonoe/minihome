@@ -3194,29 +3194,29 @@ function applyUI() {
       playerHtml = `<audio id="bgm-player-audio" autoplay style="display:none;" onended="playNextBgm()"><source src="${bgmUrl}"></audio>`;
     }
 
-   // 🔥 사이즈 최적화 및 흐르는 텍스트 구조로 변경 (+ 플레이리스트 버튼 추가)
+   // 🔥 제목 클릭 시 하단 컨트롤 영역이 열리며 부가 버튼(다음 곡, 목록) 등장
     bgmContainer.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:6px; padding: 0 2px; box-sizing: border-box; width: 100%;">
-        <!-- 제목 영역 -->
-        <div style="display:flex; align-items:center; justify-content:center; gap:6px; width:100%;">
-          <div id="bgm-note" style="font-size:14px; transition:0.3s; flex-shrink:0; cursor:pointer;" onclick="const wrap = document.getElementById('bgm-controls-wrap'); wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';" title="클릭하여 재생 컨트롤 열기/닫기">🎵</div>
+        <!-- 제목 영역 (클릭 시 하단 컨트롤 열림) -->
+        <div style="display:flex; align-items:center; justify-content:center; gap:6px; width:100%; cursor:pointer;" onclick="const wrap = document.getElementById('bgm-controls-wrap'); wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';" title="클릭하여 재생 컨트롤 및 설정 열기">
+          <div id="bgm-note" style="font-size:14px; transition:0.3s; flex-shrink:0;">🎵</div>
           
           <!-- 흐르는 텍스트 창 (130px 고정) -->
-          <div style="flex:1; width: 130px; overflow:hidden; position:relative; height:16px; display:flex; align-items:center; cursor:pointer;" onclick="const wrap = document.getElementById('bgm-controls-wrap'); wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';" title="클릭하여 컨트롤 열기/닫기">
+          <div style="flex:1; width: 130px; overflow:hidden; position:relative; height:16px; display:flex; align-items:center;">
             <div id="bgm-title-text" class="bgm-title-marquee" title="${bgmName}">${bgmName}</div>
-          </div>
-          
-          <!-- BGM 조작 버튼 묶음 -->
-          <div style="flex-shrink:0; display:flex; align-items:center; gap:4px;">
-            ${nextBtnHtml}
-            <button onclick="openPlaylistEditor(); event.stopPropagation();" style="background:none; border:none; cursor:pointer; font-size:13px; color:var(--text-sub); padding:0 2px;" title="플레이리스트 편집">📑</button>
           </div>
         </div>
         
         <!-- 진행바 및 컨트롤 영역 (기본 숨김) -->
-        <div id="bgm-controls-wrap" style="display:none; align-items:center; gap:8px; width:100%; transition: 0.3s;">
-          <button id="bgm-play-toggle" style="background:none; border:none; color:var(--text-main); cursor:pointer; font-size:12px; padding:0; width:16px; flex-shrink:0;">⏸</button>
+        <div id="bgm-controls-wrap" style="display:none; align-items:center; gap:6px; width:100%; transition: 0.3s; padding-top: 2px;">
+          <button id="bgm-play-toggle" style="background:none; border:none; color:var(--text-main); cursor:pointer; font-size:12px; padding:0; width:16px; flex-shrink:0;" title="재생/일시정지">⏸</button>
           <input type="range" id="bgm-progress" class="bgm-custom-range" value="0" min="0" max="100" step="0.1" style="flex:1;">
+          
+          <!-- 숨겨진 하단 컨트롤로 다음 곡, 플레이리스트 버튼 이동 -->
+          <div style="flex-shrink:0; display:flex; align-items:center; gap:2px;">
+            ${nextBtnHtml}
+            <button onclick="openPlaylistEditor(); event.stopPropagation();" style="background:none; border:none; cursor:pointer; font-size:13px; color:var(--text-sub); padding:0 2px; margin-left: 2px;" title="플레이리스트 편집">📑</button>
+          </div>
         </div>
         ${playerHtml}
       </div>
@@ -3932,12 +3932,27 @@ window.renderBgmEditList = function() {
       </div>
       
       <div style="display:flex; gap:4px; flex-shrink:0; margin-left: 8px;">
+        <button onclick="renameTrack(${i})" style="background:var(--input-bg); border:1px solid var(--border-dark); border-radius:4px; cursor:pointer; padding:4px 6px; font-size:10px; color:var(--text-sub);" title="이름 변경">✏️</button>
         <button onclick="moveTrack(${i}, -1)" style="background:var(--input-bg); border:1px solid var(--border-dark); border-radius:4px; cursor:pointer; padding:4px 6px; font-size:10px; color:var(--text-sub);" title="위로">▲</button>
         <button onclick="moveTrack(${i}, 1)" style="background:var(--input-bg); border:1px solid var(--border-dark); border-radius:4px; cursor:pointer; padding:4px 6px; font-size:10px; color:var(--text-sub);" title="아래로">▼</button>
         <button onclick="removeTrack(${i})" style="background:#fecaca; color:var(--danger); border:1px solid #fca5a5; border-radius:4px; cursor:pointer; padding:4px 6px; font-weight:bold; font-size:10px;" title="삭제">✕</button>
       </div>
     </div>
   `).join('');
+};
+
+window.renameTrack = function(index) {
+  const list = state.homepage.bgmList;
+  if (!list || index >= list.length) return;
+  const newName = prompt('음악 제목을 새로 입력하세요:', list[index].name);
+  if (newName !== null && newName.trim() !== '') {
+    list[index].name = newName.trim();
+    saveData();
+    window.renderBgmEditList();
+    if (window.currentBgmIndex === index) {
+      applyUI(); // 재생 중인 곡의 이름을 바꿨을 경우 메인 UI 텍스트도 즉시 업데이트
+    }
+  }
 };
 
 window.playSpecificTrack = function(index) {
@@ -4020,7 +4035,7 @@ Object.assign(window, {
   buildPrompt, callAPI, parseMD, refreshChatUI, renderMsg, renderLineMsg, showTyping, removeTyping, sendChat, insertText, chatKey,
   editMsg, saveEdit, regenerateMsg, toggleBookmark, copyMsg, renderBookmarks, deleteBookmark, toast,
   saveVideoItem, renderVideos, openVideoModal, closeVideoModal,
-  openPlaylistEditor, renderBgmEditList, playSpecificTrack, moveTrack, removeTrack, addTrackToPlaylist // 새로 추가된 부분!
+  openPlaylistEditor, renderBgmEditList, playSpecificTrack, moveTrack, removeTrack, addTrackToPlaylist, renameTrack // 👈 renameTrack 추가됨!
 });
 </script>
 </body>
