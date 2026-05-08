@@ -871,6 +871,25 @@
     .sidebar-clock { font-size: 9px; } /* 모바일에서 시계 크기를 더 줄임 */
     .sidebar-theme { transform: scale(0.75); } /* 모바일에서 테마 위젯 축소 */
   }
+/* 🎵 BGM 위젯 사이즈 최적화 및 흐르는 텍스트 애니메이션 */
+  @media (max-width: 768px) {
+    .bgm-player {
+      width: 230px !important; max-width: 92vw !important;
+      padding: 6px 12px !important; box-sizing: border-box;
+    }
+  }
+  .bgm-title-marquee {
+    display: inline-block; white-space: nowrap; font-size: 11px;
+    font-weight: 700; color: var(--text-main);
+  }
+  /* 재생 중일 때 텍스트가 오른쪽으로 이동하며 무한 반복 */
+  .bgm-title-marquee.playing {
+    animation: text-scroll-right 6s linear infinite;
+  }
+  @keyframes text-scroll-right {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(130px); }
+  }
 </style>
 </head>
 <body>
@@ -3111,58 +3130,61 @@ function applyUI() {
       ? `<button onclick="playNextBgm(); event.stopPropagation();" style="background:none; border:none; cursor:pointer; font-size:12px; margin-left:4px;" title="다음 곡">⏭️</button>` 
       : '';
 
-    let playerHtml = '';
+   let playerHtml = '';
     let isYtBgm = false;
     let ytId = '';
     const ytBgmMatch = bgmUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
     
     if (ytBgmMatch && ytBgmMatch[1]) {
       isYtBgm = true; ytId = ytBgmMatch[1];
-      // 유튜브 실제 영상은 안 보이게 숨김 처리
       playerHtml = `<div id="bgm-player-yt" style="width:10px; height:10px; opacity:0; pointer-events:none; position:absolute;"></div>`;
     } else {
-      // 일반 오디오 숨김 처리
       playerHtml = `<audio id="bgm-player-audio" autoplay style="display:none;" onended="playNextBgm()"><source src="${bgmUrl}"></audio>`;
     }
 
-    // 🔥 새롭게 수정된 BGM 렌더링 UI (접기/펴기 기능 추가)
+    // 🔥 사이즈 최적화 및 흐르는 텍스트 구조로 변경
     bgmContainer.innerHTML = `
-      <div style="display:flex; flex-direction:column; gap:8px; padding: 4px;">
+      <div style="display:flex; flex-direction:column; gap:6px; padding: 0 2px; box-sizing: border-box; width: 100%;">
         <!-- 제목 영역 (클릭 시 하단 진행바 열림/닫힘) -->
-        <div style="display:flex; align-items:center; gap:6px; justify-content:center; cursor:pointer;" onclick="const wrap = document.getElementById('bgm-controls-wrap'); wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';" title="클릭하여 재생 컨트롤 열기/닫기">
-          <div id="bgm-note" style="font-size:16px; transition:0.3s;">🎵</div>
-          <div style="font-size:12px; font-weight:700; color:var(--text-main); max-width:130px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${bgmName}">${bgmName}</div>
-          ${nextBtnHtml}
+        <div style="display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; width:100%;" onclick="const wrap = document.getElementById('bgm-controls-wrap'); wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';" title="클릭하여 재생 컨트롤 열기/닫기">
+          <div id="bgm-note" style="font-size:14px; transition:0.3s; flex-shrink:0;">🎵</div>
+          
+          <!-- 흐르는 텍스트 창 (130px 고정) -->
+          <div style="flex:1; width: 130px; overflow:hidden; position:relative; height:16px; display:flex; align-items:center;">
+            <div id="bgm-title-text" class="bgm-title-marquee" title="${bgmName}">${bgmName}</div>
+          </div>
+          
+          <div style="flex-shrink:0;">${nextBtnHtml}</div>
         </div>
         
         <!-- 진행바 및 컨트롤 영역 (기본 숨김) -->
-        <div id="bgm-controls-wrap" style="display:none; align-items:center; gap:8px; width:100%; transition: 0.3s; margin-top: 4px;">
-          <button id="bgm-play-toggle" style="background:none; border:none; color:var(--text-main); cursor:pointer; font-size:12px; padding:0; width:16px;">⏸</button>
-          <input type="range" id="bgm-progress" class="bgm-custom-range" value="0" min="0" max="100" step="0.1">
+        <div id="bgm-controls-wrap" style="display:none; align-items:center; gap:8px; width:100%; transition: 0.3s;">
+          <button id="bgm-play-toggle" style="background:none; border:none; color:var(--text-main); cursor:pointer; font-size:12px; padding:0; width:16px; flex-shrink:0;">⏸</button>
+          <input type="range" id="bgm-progress" class="bgm-custom-range" value="0" min="0" max="100" step="0.1" style="flex:1;">
         </div>
         ${playerHtml}
       </div>
     `;
 
+    // 상태에 따라 텍스트 흐르는 효과(클래스) 추가/제거 연동
     setTimeout(() => {
       const note = document.getElementById('bgm-note');
       const playToggle = document.getElementById('bgm-play-toggle');
       const progressBar = document.getElementById('bgm-progress');
+      const titleText = document.getElementById('bgm-title-text');
       
       if (!isYtBgm) {
-        // 일반 MP3 파일일 때 진행바/버튼 연동
         const audio = document.getElementById('bgm-player-audio');
         if (audio) {
           playToggle.onclick = () => { if(audio.paused) audio.play(); else audio.pause(); };
-          audio.onplay = () => { note.classList.add('playing-note'); playToggle.innerText = '⏸'; };
-          audio.onpause = () => { note.classList.remove('playing-note'); playToggle.innerText = '▶'; };
+          audio.onplay = () => { note.classList.add('playing-note'); playToggle.innerText = '⏸'; titleText.classList.add('playing'); };
+          audio.onpause = () => { note.classList.remove('playing-note'); playToggle.innerText = '▶'; titleText.classList.remove('playing'); };
           audio.ontimeupdate = () => { if(audio.duration) progressBar.value = (audio.currentTime / audio.duration) * 100; };
           progressBar.oninput = (e) => { if(audio.duration) audio.currentTime = (e.target.value / 100) * audio.duration; };
-          if (!audio.paused) note.classList.add('playing-note');
+          if (!audio.paused) { note.classList.add('playing-note'); titleText.classList.add('playing'); }
         }
       } 
       else {
-        // 유튜브 링크일 때 진행바/버튼 연동
         let ytTimer;
         if (!document.getElementById('yt-api-script')) {
           const tag = document.createElement('script'); tag.id = 'yt-api-script'; tag.src = 'https://www.youtube.com/iframe_api';
@@ -3189,6 +3211,7 @@ function applyUI() {
                 'onStateChange': function(event) {
                   if (event.data === YT.PlayerState.PLAYING) {
                     if (note) note.classList.add('playing-note');
+                    if (titleText) titleText.classList.add('playing');
                     playToggle.innerText = '⏸';
                     ytTimer = setInterval(() => {
                       const duration = event.target.getDuration(); const current = event.target.getCurrentTime();
@@ -3196,6 +3219,7 @@ function applyUI() {
                     }, 500);
                   } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.UNSTARTED) {
                     if (note) note.classList.remove('playing-note');
+                    if (titleText) titleText.classList.remove('playing');
                     playToggle.innerText = '▶'; clearInterval(ytTimer);
                   }
                   if (event.data === YT.PlayerState.ENDED) playNextBgm();
