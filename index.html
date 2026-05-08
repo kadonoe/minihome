@@ -1651,50 +1651,50 @@
           <textarea class="input-field" id="is-text-val" style="width:100%; min-height:60px;"></textarea>
         </div>
         
-        <div style="display:flex; gap:10px; margin-bottom:16px;">
-          <div style="flex:1;">
+        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+          <div style="flex: 1 1 140px; min-width:0;">
             <label class="modal-label">글자 크기</label>
-            <input type="text" class="input-field" id="is-font-size" style="width:100%;" placeholder="예: 15px, 1.2em">
+            <input type="text" class="input-field" id="is-font-size" style="width:100%; box-sizing: border-box;" placeholder="예: 15px, 1.2em">
           </div>
-          <div style="flex:1;">
+          <div style="flex: 1 1 140px; min-width:0;">
             <label class="modal-label">글꼴 (폰트)</label>
-            <input type="text" class="input-field" id="is-font-family" style="width:100%;" placeholder="예: 궁서체, serif">
+            <input type="text" class="input-field" id="is-font-family" style="width:100%; box-sizing: border-box;" placeholder="예: 궁서체, serif">
           </div>
         </div>
         
-     <div style="padding:12px; background:var(--input-bg); border-radius:8px; border:1px solid var(--border-color); margin-bottom:20px;">
+        <div style="padding:12px; background:var(--input-bg); border-radius:8px; border:1px solid var(--border-color); margin-bottom:20px;">
           <div style="font-size:11px; font-weight:bold; color:var(--primary-color); margin-bottom:12px;">👆 색상 상세 설정 (기본 및 선택 시)</div>
           
-          <div style="display:flex; gap:10px; margin-bottom:12px;">
-            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+          <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+            <div style="flex: 1 1 140px; display:flex; flex-direction:column; gap:4px; min-width:0;">
               <span style="font-size:10.5px; font-weight:bold; color:var(--text-main);" id="lbl-is-color">글자 색상 (기본)</span>
               <div style="display:flex; gap:4px; align-items:center;">
-                <input type="color" id="is-color-picker" style="width:24px; height:24px; padding:0; border:none; border-radius:4px; cursor:pointer;" oninput="document.getElementById('is-color').value = this.value">
-                <input type="text" class="input-field" id="is-color" style="flex:1; padding:4px 6px; font-size:11px;" placeholder="#000000" oninput="try{document.getElementById('is-color-picker').value = this.value}catch(e){}">
+                <input type="color" id="is-color-picker" style="flex-shrink:0; width:24px; height:24px; padding:0; border:none; border-radius:4px; cursor:pointer;" oninput="document.getElementById('is-color').value = this.value">
+                <input type="text" class="input-field" id="is-color" style="flex:1; min-width:0; box-sizing:border-box; padding:4px 6px; font-size:11px;" placeholder="#000000" oninput="try{document.getElementById('is-color-picker').value = this.value}catch(e){}">
               </div>
             </div>
-            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+            <div style="flex: 1 1 140px; display:flex; flex-direction:column; gap:4px; min-width:0;">
               <span style="font-size:10.5px; font-weight:bold; color:var(--text-main);" id="lbl-is-bg-color">배경 색상 (기본)</span>
               <div style="display:flex; gap:4px; align-items:center;">
-                <input type="color" id="is-bg-color-picker" style="width:24px; height:24px; padding:0; border:none; border-radius:4px; cursor:pointer;" oninput="document.getElementById('is-bg-color').value = this.value">
-                <input type="text" class="input-field" id="is-bg-color" style="flex:1; padding:4px 6px; font-size:11px;" placeholder="transparent" oninput="try{document.getElementById('is-bg-color-picker').value = this.value}catch(e){}">
+                <input type="color" id="is-bg-color-picker" style="flex-shrink:0; width:24px; height:24px; padding:0; border:none; border-radius:4px; cursor:pointer;" oninput="document.getElementById('is-bg-color').value = this.value">
+                <input type="text" class="input-field" id="is-bg-color" style="flex:1; min-width:0; box-sizing:border-box; padding:4px 6px; font-size:11px;" placeholder="transparent" oninput="try{document.getElementById('is-bg-color-picker').value = this.value}catch(e){}">
               </div>
             </div>
           </div>
 
-          <div style="display:flex; gap:10px;">
-            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="flex: 1 1 140px; display:flex; flex-direction:column; gap:4px; min-width:0;">
               <span style="font-size:10.5px; font-weight:bold; color:var(--text-main);" id="lbl-is-a-color">눌렀을 때 글자색 (Active)</span>
               <div style="display:flex; gap:4px; align-items:center;">
-                <input type="color" id="is-a-color-picker" style="width:24px; height:24px; padding:0; border:none; border-radius:4px; cursor:pointer;" oninput="document.getElementById('is-a-color').value = this.value">
-                <input type="text" class="input-field" id="is-a-color" style="flex:1; padding:4px 6px; font-size:11px;" placeholder="#aa0000" oninput="try{document.getElementById('is-a-color-picker').value = this.value}catch(e){}">
+                <input type="color" id="is-a-color-picker" style="flex-shrink:0; width:24px; height:24px; padding:0; border:none; border-radius:4px; cursor:pointer;" oninput="document.getElementById('is-a-color').value = this.value">
+                <input type="text" class="input-field" id="is-a-color" style="flex:1; min-width:0; box-sizing:border-box; padding:4px 6px; font-size:11px;" placeholder="#aa0000" oninput="try{document.getElementById('is-a-color-picker').value = this.value}catch(e){}">
               </div>
             </div>
-            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+            <div style="flex: 1 1 140px; display:flex; flex-direction:column; gap:4px; min-width:0;">
               <span style="font-size:10.5px; font-weight:bold; color:var(--text-main);" id="lbl-is-a-bg-color">눌렀을 때 배경색 (Active)</span>
               <div style="display:flex; gap:4px; align-items:center;">
-                <input type="color" id="is-a-bg-color-picker" style="width:24px; height:24px; padding:0; border:none; border-radius:4px; cursor:pointer;" oninput="document.getElementById('is-a-bg-color').value = this.value">
-                <input type="text" class="input-field" id="is-a-bg-color" style="flex:1; padding:4px 6px; font-size:11px;" placeholder="#cccccc" oninput="try{document.getElementById('is-a-bg-color-picker').value = this.value}catch(e){}">
+                <input type="color" id="is-a-bg-color-picker" style="flex-shrink:0; width:24px; height:24px; padding:0; border:none; border-radius:4px; cursor:pointer;" oninput="document.getElementById('is-a-bg-color').value = this.value">
+                <input type="text" class="input-field" id="is-a-bg-color" style="flex:1; min-width:0; box-sizing:border-box; padding:4px 6px; font-size:11px;" placeholder="#cccccc" oninput="try{document.getElementById('is-a-bg-color-picker').value = this.value}catch(e){}">
               </div>
             </div>
           </div>
