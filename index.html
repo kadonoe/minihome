@@ -833,6 +833,25 @@
     .auto-status-field { max-width: 110px; }
     .auto-status-bar { padding: 5px 10px; gap: 5px; min-height: 32px; }
   }
+/* 🎵 BGM 음표 애니메이션 및 진행바 스타일 추가 */
+  @keyframes note-dance {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-3px) rotate(-15deg); }
+    75% { transform: translateY(-3px) rotate(15deg); }
+  }
+  .playing-note {
+    animation: note-dance 1s infinite linear;
+    color: var(--primary-color) !important;
+    display: inline-block;
+  }
+  .bgm-custom-range {
+    appearance: none; width: 100%; height: 4px; border-radius: 2px;
+    background: var(--border-dark); outline: none; cursor: pointer;
+  }
+  .bgm-custom-range::-webkit-slider-thumb {
+    appearance: none; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--primary-color);
+  }
 </style>
 </head>
 <body>
@@ -886,7 +905,9 @@
       </div>
 <!-- 우측 컨텐츠 -->
       <div class="content-area">
-        <div class="content-top-bar"><span><span style="color: #22c55e;">●</span> UPLINK READY</span></div>
+        <div class="content-top-bar">
+  <div id="realtime-clock" style="font-weight: 600; font-size: 11.5px; letter-spacing: 0.5px;"></div>
+</div>
         
         <!-- 夢(Dream) 전용 서브 내비게이션 -->
         <div id="dream-sub-nav" class="hidden" style="display:flex; align-items:center; justify-content:flex-start; padding: 6px 20px; background:#fff; border-bottom: 1px solid var(--border-color); flex-shrink: 0; min-height: 36px;">
@@ -1760,6 +1781,17 @@ window.onMsgRendered = function(mode, role, msgId, text, isLine) {
 window.onload = async () => {
   document.getElementById('d-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('app-title-display').textContent = "☁️ 데이터 동기화 중...";
+  
+  // ▼ 시계 타이머 추가된 부분
+  setInterval(() => {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\.$/, '');
+    const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+    const clockEl = document.getElementById('realtime-clock');
+    if(clockEl) clockEl.innerHTML = `<span style="color:var(--text-muted);">TODAY</span> ${dateStr} &nbsp; <span style="color:var(--text-muted);">TIME</span> ${timeStr} &nbsp; <span style="color: #22c55e;">●</span> ON`;
+  }, 1000);
+  // ▲ 여기까지
+
   await loadData();
 };
 
@@ -2272,31 +2304,23 @@ function renderGallery() {
 // === 새로 갱신된 영상 아카이브 기능 ===
 
 function parseVideoUrl(url) {
-  // 1. 유튜브 링크 확인
   const ytMatch = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   if (ytMatch && ytMatch[1]) {
     return {
       type: 'youtube',
       isValid: true,
-      // origin 파라미터를 추가하여 153 오류 방지
-      embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0&enablejsapi=1&origin=${window.location.origin}`,
+      embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`,
       thumbUrl: `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`
     };
   }
-  
-  // 2. 일반 동영상 링크 확인 (.mp4, .webm 등)
   if (url.match(/\.(mp4|webm|ogg)$/i) || url.startsWith('http')) {
     return {
-      type: 'direct',
-      isValid: true,
-      embedUrl: url,
+      type: 'direct', isValid: true, embedUrl: url,
       thumbUrl: 'https://via.placeholder.com/300x170/1e293b/ffffff?text=VIDEO'
     };
   }
-
   return { type: 'unknown', isValid: false, embedUrl: '', thumbUrl: 'https://via.placeholder.com/300x170/1e293b/ffffff?text=INVALID+URL' };
 }
-
 function renderVideos() {
   const container = document.getElementById('video-container');
   if(!state.videos) state.videos =[];
@@ -2362,15 +2386,13 @@ function openVideoModal(id) {
   document.getElementById('vp-title-display').textContent = v.title;
   document.getElementById('vp-desc-display').textContent = v.desc || '설명이 없습니다.';
   
-  // 모달이 열리는 애니메이션 이후에 플레이어 로드
   setTimeout(() => {
-    // 기존 iframe이 있던 부모 div를 찾아 내용물을 동적으로 생성
     const container = document.getElementById('vp-iframe') ? document.getElementById('vp-iframe').parentElement : document.querySelector('#video-play-modal .modal-box > div:nth-child(2)');
     
     if (parsed.type === 'youtube') {
-      container.innerHTML = `<iframe id="vp-iframe" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen src="${parsed.embedUrl}"></iframe>`;
+      // 유튜브 최신 보안 정책 표준에 맞춘 순정 iframe (referrerpolicy 속성 필수)
+      container.innerHTML = `<iframe id="vp-iframe" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" src="${parsed.embedUrl}"></iframe>`;
     } else {
-      // 일반 직링크 MP4용
       container.innerHTML = `<video id="vp-video" controls autoplay style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000;" src="${parsed.embedUrl}"></video>`;
     }
   }, 300);
@@ -2391,9 +2413,7 @@ function openVideoModal(id) {
     document.getElementById('vid-modal-title').innerText = '🎬 영상 정보 수정';
     openModal('video-add-panel');
   };
-}
-
-function closeVideoModal() {
+}function closeVideoModal() {
   document.getElementById('video-play-modal').classList.remove('open');
   const container = document.querySelector('#video-play-modal .modal-box > div:nth-child(2)');
   if (container) {
@@ -3044,6 +3064,7 @@ function applyUI() {
   const bgmTitleEl = document.querySelector('.bgm-title');
   if (bgmTitleEl) bgmTitleEl.style.display = 'none';
 
+ // ▼ 여기서부터 복사해서 기존 코드를 덮어씌우세요!
   let activeBgmList = state.homepage.bgmList && state.homepage.bgmList.length > 0 
     ? state.homepage.bgmList 
     : (state.homepage.bgm ?[{ name: '기본 배경음악', url: state.homepage.bgm }] :[]);
@@ -3058,100 +3079,110 @@ function applyUI() {
       if (bgmUrl.startsWith('http')) {
         bgmName = bgmUrl.split('/').pop().split('?')[0] || '배경음악';
         try { bgmName = decodeURIComponent(bgmName); } catch(e){}
-      } else {
-        bgmName = '로컬 업로드 오디오';
-      }
+      } else { bgmName = '로컬 업로드 오디오'; }
     }
 
    let nextBtnHtml = activeBgmList.length > 1 
       ? `<button onclick="playNextBgm(); event.stopPropagation();" style="background:none; border:none; cursor:pointer; font-size:12px; margin-left:4px;" title="다음 곡">⏭️</button>` 
       : '';
 
-    // BGM이 유튜브 링크인지 일반 MP3/웹오디오 링크인지 판별
     let playerHtml = '';
     let isYtBgm = false;
     let ytId = '';
     const ytBgmMatch = bgmUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
     
     if (ytBgmMatch && ytBgmMatch[1]) {
-      isYtBgm = true;
-      ytId = ytBgmMatch[1];
-      // 유튜브 전용 숨김/최소화 플레이어 생성
-      playerHtml = `<div id="bgm-player-yt" style="width: 100%; height: 32px; border-radius: 6px; overflow: hidden; pointer-events: none;"></div>`;
+      isYtBgm = true; ytId = ytBgmMatch[1];
+      // 유튜브 실제 영상은 안 보이게 숨김 처리
+      playerHtml = `<div id="bgm-player-yt" style="width:10px; height:10px; opacity:0; pointer-events:none; position:absolute;"></div>`;
     } else {
-      // 일반 오디오 파일 (mp3, 링크 직통)
-      playerHtml = `<audio id="bgm-player-audio" controls autoplay style="width: 100%; height: 32px; border-radius: 6px; outline:none;" onended="playNextBgm()">
-          <source src="${bgmUrl}">
-        </audio>`;
+      // 일반 오디오 숨김 처리
+      playerHtml = `<audio id="bgm-player-audio" autoplay style="display:none;" onended="playNextBgm()"><source src="${bgmUrl}"></audio>`;
     }
 
+    // 🔥 새롭게 추가된 BGM 재생바 커스텀 UI
     bgmContainer.innerHTML = `
-      <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
-        <div style="display:flex; align-items:center; gap:4px; cursor:pointer; padding: 4px;" onclick="toggleAudioControls()" title="클릭하여 조작창 열기">
-          <div id="bgm-note" class="" style="font-size:16px; display:inline-block;">🎵</div>
+      <div style="display:flex; flex-direction:column; gap:8px; padding: 4px;">
+        <div style="display:flex; align-items:center; gap:6px; justify-content:center;">
+          <div id="bgm-note" style="font-size:16px; transition:0.3s;">🎵</div>
           <div style="font-size:12px; font-weight:700; color:var(--text-main); max-width:130px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${bgmName}">${bgmName}</div>
           ${nextBtnHtml}
         </div>
-        <div id="audio-controls-wrapper" style="position:absolute; left:-9999px; visibility:hidden; width:100%; margin-top:4px;">
-          ${playerHtml}
+        <div style="display:flex; align-items:center; gap:8px; width:100%;">
+          <button id="bgm-play-toggle" style="background:none; border:none; color:var(--text-main); cursor:pointer; font-size:12px; padding:0; width:16px;">⏸</button>
+          <input type="range" id="bgm-progress" class="bgm-custom-range" value="0" min="0" max="100" step="0.1">
         </div>
+        ${playerHtml}
       </div>
     `;
 
     setTimeout(() => {
       const note = document.getElementById('bgm-note');
+      const playToggle = document.getElementById('bgm-play-toggle');
+      const progressBar = document.getElementById('bgm-progress');
       
-      // 일반 오디오 처리
       if (!isYtBgm) {
+        // 일반 MP3 파일일 때 진행바/버튼 연동
         const audio = document.getElementById('bgm-player-audio');
-        if (audio && note) {
-          audio.onplay = () => note.classList.add('playing-note');
-          audio.onpause = () => note.classList.remove('playing-note');
+        if (audio) {
+          playToggle.onclick = () => { if(audio.paused) audio.play(); else audio.pause(); };
+          audio.onplay = () => { note.classList.add('playing-note'); playToggle.innerText = '⏸'; };
+          audio.onpause = () => { note.classList.remove('playing-note'); playToggle.innerText = '▶'; };
+          audio.ontimeupdate = () => { if(audio.duration) progressBar.value = (audio.currentTime / audio.duration) * 100; };
+          progressBar.oninput = (e) => { if(audio.duration) audio.currentTime = (e.target.value / 100) * audio.duration; };
           if (!audio.paused) note.classList.add('playing-note');
         }
       } 
-      // 유튜브 오디오 처리
       else {
+        // 유튜브 링크일 때 진행바/버튼 연동
+        let ytTimer;
         if (!document.getElementById('yt-api-script')) {
-          const tag = document.createElement('script');
-          tag.id = 'yt-api-script';
-          tag.src = 'https://www.youtube.com/iframe_api';
-          const firstScriptTag = document.getElementsByTagName('script')[0];
-          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+          const tag = document.createElement('script'); tag.id = 'yt-api-script'; tag.src = 'https://www.youtube.com/iframe_api';
+          const firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         }
         
         const initYtPlayer = () => {
           if (window.YT && window.YT.Player) {
             new YT.Player('bgm-player-yt', {
-              videoId: ytId, // 영상 ID 주입
+              videoId: ytId, host: 'https://www.youtube.com',
               playerVars: { 'autoplay': 1, 'controls': 0, 'playsinline': 1 },
               events: {
                 'onReady': function(event) {
                    event.target.playVideo();
+                   playToggle.onclick = () => {
+                     const state = event.target.getPlayerState();
+                     if(state === YT.PlayerState.PLAYING) event.target.pauseVideo(); else event.target.playVideo();
+                   };
+                   progressBar.oninput = (e) => {
+                     const duration = event.target.getDuration();
+                     if(duration) event.target.seekTo((e.target.value / 100) * duration, true);
+                   };
                 },
                 'onStateChange': function(event) {
                   if (event.data === YT.PlayerState.PLAYING) {
                     if (note) note.classList.add('playing-note');
-                  } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                    playToggle.innerText = '⏸';
+                    ytTimer = setInterval(() => {
+                      const duration = event.target.getDuration(); const current = event.target.getCurrentTime();
+                      if(duration) progressBar.value = (current / duration) * 100;
+                    }, 500);
+                  } else {
                     if (note) note.classList.remove('playing-note');
+                    playToggle.innerText = '▶'; clearInterval(ytTimer);
                   }
-                  if (event.data === YT.PlayerState.ENDED) {
-                    playNextBgm(); 
-                  }
+                  if (event.data === YT.PlayerState.ENDED) playNextBgm();
                 }
               }
             });
-          } else {
-            setTimeout(initYtPlayer, 300);
-          }
+          } else { setTimeout(initYtPlayer, 300); }
         };
         initYtPlayer();
       }
     }, 100);
-    
   } else { 
     bgmContainer.innerHTML = `<div class="bgm-error" style="border:none; height:auto; padding:4px;">등록된 음악 없음</div>`; 
   }
+// ▲ 여기까지 덮어씌워 줍니다!
   document.getElementById('sidebar-name').textContent = state.ui.plName; document.getElementById('sidebar-role').textContent = state.ui.plRole;
   const sImg = document.getElementById('sidebar-img'); const sEmoji = document.getElementById('sidebar-emoji');
   if(state.ui.plImg) { sImg.src = state.ui.plImg; sImg.style.display='block'; sEmoji.style.display='none'; } else { sImg.style.display='none'; sEmoji.style.display='block'; sEmoji.textContent = state.ui.plEmoji; }
