@@ -1345,41 +1345,31 @@
   <div class="modal-overlay" id="ui-panel">
     <div class="modal-box" style="max-width: 500px;">
       <div class="modal-header">
-        <div class="modal-title">🧑 내 프로필 & 탭 아이콘 설정</div>
+        <div class="modal-title">🧑 유저 프로필 설정</div>
         <button class="modal-close" onclick="closeModal('ui-panel')">✕</button>
       </div>
       <div class="modal-body">
-        <div class="modal-group"><label class="modal-label">내 이름</label><input class="input-field" id="ui-pl-name" style="width:100%;"></div>
-        <div class="modal-group"><label class="modal-label">내 역할/소속</label><input class="input-field" id="ui-pl-role" style="width:100%;"></div>
-        <div class="modal-group"><label class="modal-label">내 이모지 (프사 없을때)</label><input class="input-field" id="ui-pl-emoji" style="width:100%;"></div>
-        <div class="modal-group" style="background:var(--input-bg); padding:12px; border-radius:8px;">
-          <label class="modal-help" style="margin:0 0 8px 0; font-weight:bold;">내 프로필 이미지</label>
+        <div class="modal-group">
+          <label class="modal-label">내 이름</label>
+          <input type="text" class="input-field" id="ui-pl-name" style="width:100%;" placeholder="예: 노에">
+        </div>
+        <div class="modal-group">
+          <label class="modal-label">내 역할/소속</label>
+          <input type="text" class="input-field" id="ui-pl-role" style="width:100%;" placeholder="예: 의료/기술 스태프">
+        </div>
+        <div class="modal-group">
+          <label class="modal-label">내 이모지 (프로필 사진 없을 때 표시)</label>
+          <input type="text" class="input-field" id="ui-pl-emoji" style="width:100%;" placeholder="예: ❄️">
+        </div>
+        <div class="modal-group" style="background:var(--input-bg); padding:16px; border-radius:12px; border:1px solid var(--border-color);">
+          <label class="modal-help" style="margin:0 0 8px 0; font-weight:bold; color:var(--primary-color);">🖼️ 내 프로필 사진 (선택)</label>
           <input type="file" id="ui-pl-img-file" class="input-field" accept="image/*" style="width:100%; padding:8px 12px; font-size:12px; background:#fff; margin-bottom:8px;">
           <input type="text" id="ui-pl-img-url" class="input-field" style="width:100%; font-size:12px; background:#fff;" placeholder="외부 이미지 링크 (https://...)">
-          <label style="font-size:11px; color:var(--danger); margin-top:8px; display:inline-block;"><input type="checkbox" id="ui-pl-img-delete"> 이미지 삭제</label>
-        </div>
-        <hr style="border:0; border-top:1px solid var(--border-color); margin: 20px 0;">
-        <div class="modal-group">
-          <label class="modal-label">✨ 하단 탭 메뉴 아이콘 커스텀 (이모지 또는 사진)</label>
-          <!-- ▼ 추가된 투명화 체크박스 ▼ -->
-          <label style="font-size:12px; color:var(--primary-color); font-weight:bold; display:block; margin-bottom:10px;">
-            <input type="checkbox" id="ui-icon-remove-white"> 🪄 업로드하는 아이콘의 흰색 배경 투명하게 지우기
+          <label style="font-size:11px; color:var(--danger); margin-top:8px; display:block;">
+            <input type="checkbox" id="ui-pl-img-delete"> 현재 프로필 이미지 삭제하기
           </label>
-          <!-- ▲ 추가된 부분 끝 ▲ -->
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-            <div><span style="font-size:12px; font-weight:bold;">홈</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-home" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-home')">적용</button><input type="file" id="file-icon-home" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-home')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-home').click()">사진</button></div></div>
-            <div><span style="font-size:12px; font-weight:bold;">夢 (메인)</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-dream" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-dream')">적용</button><input type="file" id="file-icon-dream" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-dream')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-dream').click()">사진</button></div></div>
-            <div><span style="font-size:12px;">일기</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-diary" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-diary')">적용</button><input type="file" id="file-icon-diary" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-diary')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-diary').click()">사진</button></div></div>
-            <div><span style="font-size:12px;">채팅</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-chat" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-chat')">적용</button><input type="file" id="file-icon-chat" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-chat')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-chat').click()">사진</button></div></div>
-            
-            <div style="grid-column: 1 / -1; margin-top:8px; border-bottom:1px dashed #ccc; padding-bottom:4px; font-size:12px; color:var(--text-sub);">🔻 夢 서브 탭 아이콘 설정</div>
-            <div><span style="font-size:12px;">사진첩 (夢)</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-gallery" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-gallery')">적용</button><input type="file" id="file-icon-gallery" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-gallery')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-gallery').click()">사진</button></div></div>
-            <div><span style="font-size:12px;">영상첩 (夢)</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-video" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-video')">적용</button><input type="file" id="file-icon-video" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-video')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-video').click()">사진</button></div></div>
-            <div><span style="font-size:12px;">노트 (夢)</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-note" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-note')">적용</button><input type="file" id="file-icon-note" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-note')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-note').click()">사진</button></div></div>
-          </div>
-          <span class="modal-help" style="margin-top:6px; display:inline-block;">※ 사진 첨부 시 이모지 대신 이미지가 표시됩니다. 원상복구 하려면 입력칸을 지우고 🏠 같은 이모지를 쓰세요.</span>
         </div>
-        <button class="btn-save" style="width:100%; margin-top:10px;" onclick="saveUI()">프로필 및 설정 저장</button>
+        <button class="btn-save" style="width:100%; font-size:15px; padding:14px;" onclick="saveUI()">프로필 설정 저장하기</button>
       </div>
     </div>
   </div>
@@ -1479,6 +1469,27 @@
             </div>
           </div>
           <label style="font-size:11px; color:var(--danger); display:block; margin-top:12px;"><input type="checkbox" id="th-deco-clear"> 꾸미기 이미지 제거하기</label>
+        </div>
+<hr style="border:0; border-top:1px solid var(--border-color); margin: 20px 0;">
+        <div class="modal-group">
+          <label class="modal-label">✨ 하단 탭 메뉴 아이콘 커스텀 (이모지 또는 사진)</label>
+          <!-- ▼ 추가된 투명화 체크박스 ▼ -->
+          <label style="font-size:12px; color:var(--primary-color); font-weight:bold; display:block; margin-bottom:10px;">
+            <input type="checkbox" id="ui-icon-remove-white"> 🪄 업로드하는 아이콘의 흰색 배경 투명하게 지우기
+          </label>
+          <!-- ▲ 추가된 부분 끝 ▲ -->
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div><span style="font-size:12px; font-weight:bold;">홈</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-home" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-home')">적용</button><input type="file" id="file-icon-home" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-home')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-home').click()">사진</button></div></div>
+            <div><span style="font-size:12px; font-weight:bold;">夢 (메인)</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-dream" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-dream')">적용</button><input type="file" id="file-icon-dream" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-dream')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-dream').click()">사진</button></div></div>
+            <div><span style="font-size:12px;">일기</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-diary" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-diary')">적용</button><input type="file" id="file-icon-diary" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-diary')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-diary').click()">사진</button></div></div>
+            <div><span style="font-size:12px;">채팅</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-chat" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-chat')">적용</button><input type="file" id="file-icon-chat" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-chat')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-chat').click()">사진</button></div></div>
+            
+            <div style="grid-column: 1 / -1; margin-top:8px; border-bottom:1px dashed #ccc; padding-bottom:4px; font-size:12px; color:var(--text-sub);">🔻 夢 서브 탭 아이콘 설정</div>
+            <div><span style="font-size:12px;">사진첩 (夢)</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-gallery" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-gallery')">적용</button><input type="file" id="file-icon-gallery" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-gallery')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-gallery').click()">사진</button></div></div>
+            <div><span style="font-size:12px;">영상첩 (夢)</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-video" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-video')">적용</button><input type="file" id="file-icon-video" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-video')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-video').click()">사진</button></div></div>
+            <div><span style="font-size:12px;">노트 (夢)</span> <div style="display:flex; gap:4px;"><input type="text" id="icon-note" class="input-field" style="flex:1; padding:6px; min-width:0;" placeholder="이모지/URL"><button class="btn-outline" style="padding:4px 8px; font-size:11px; border-color:#94a3b8; color:#64748b;" onclick="applyTabIconText('icon-note')">적용</button><input type="file" id="file-icon-note" accept="image/*" style="display:none;" onchange="handleTabIconFile(event, 'icon-note')"><button class="btn-outline" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('file-icon-note').click()">사진</button></div></div>
+          </div>
+          <span class="modal-help" style="margin-top:6px; display:inline-block;">※ 사진 첨부 시 이모지 대신 이미지가 표시됩니다. 원상복구 하려면 입력칸을 지우고 🏠 같은 이모지를 쓰세요.</span>
         </div>
         <button class="btn-save" style="width:100%; margin-top:10px; font-size:15px; padding:14px;" onclick="saveThemeExt()">적용 및 저장하기</button>
       </div>
@@ -2359,30 +2370,30 @@ async function processImageUrl(url, removeWhite, maxWidth = 1000) {
     img.src = url;
   });
 }
-async function saveUI() {
+window.saveUI = async function() {
   state.ui.plName = document.getElementById('ui-pl-name').value || 'Player'; 
   state.ui.plEmoji = document.getElementById('ui-pl-emoji').value || '❄️'; 
   state.ui.plRole = document.getElementById('ui-pl-role').value || 'Role';
   
-  state.ui.icons = {
-    home: document.getElementById('icon-home').value || '🏠',
-    dream: document.getElementById('icon-dream').value || '🌙',
-    gallery: document.getElementById('icon-gallery').value || '📷',
-    video: document.getElementById('icon-video').value || '🎬',
-    note: document.getElementById('icon-note').value || '📔',
-    diary: document.getElementById('icon-diary').value || '📄',
-    chat: document.getElementById('icon-chat').value || '💬',
-    settings: '⚙️'
-  };
-
   const plFile = document.getElementById('ui-pl-img-file').files[0]; 
   const plUrl = document.getElementById('ui-pl-img-url').value.trim();
   
-  if (document.getElementById('ui-pl-img-delete').checked) state.ui.plImg = null;
-  else if (plUrl) state.ui.plImg = plUrl;
-  else if (plFile) state.ui.plImg = await new Promise(res => compressImage(plFile, res));
+  // 💡 사용자가 답답하지 않도록 저장을 누르는 즉시 모달 창부터 닫습니다!
+  closeModal('ui-panel');
+  if (plFile) toast('프로필 사진을 최적화하고 저장 중입니다... ⏳');
+
+  if (document.getElementById('ui-pl-img-delete').checked) {
+    state.ui.plImg = null;
+  } else if (plUrl) {
+    state.ui.plImg = plUrl;
+  } else if (plFile) {
+    state.ui.plImg = await new Promise(res => compressImage(plFile, res));
+  }
   
-  saveData(); applyUI(); refreshChatUI('chat'); closeModal('ui-panel'); toast('프로필 설정 저장');
+  saveData(); 
+  applyUI(); 
+  refreshChatUI('chat'); 
+  toast('프로필 설정이 성공적으로 저장되었습니다!');
 }
 function saveDatabase() { 
   state.db.core=document.getElementById('db-core').value; 
@@ -4180,7 +4191,7 @@ window.addTrackToPlaylist = async function() {
   toast('음악이 추가되었습니다!');
 };
 Object.assign(window, {
-  loadData, saveData, exportData, importData, switchPage, openModal, closeModal, applyUI, getAvatarHTML,
+  loadData, saveData, exportData, importData, switchPage, openModal, closeModal, applyUI, getAvatarHTML, saveUI,
   saveHomepageLayout, compressImage, saveDatabase, saveScenario, saveSettings, updateProviderUI,
   renderGallery, saveGalleryItem, openPhotoModal, deleteGalleryItem, setMood, saveDiary, renderDiaries, deleteDiary,
   renderChatList, openChatRoom, closeChatRoom, openCharModal, saveCharacter, deleteCharacter,
